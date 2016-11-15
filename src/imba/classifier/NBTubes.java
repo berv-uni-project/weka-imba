@@ -5,9 +5,7 @@
  */
 package imba.classifier;
 
-import java.io.File;
 import java.util.ArrayList;
-import javafx.stage.FileChooser;
 import weka.classifiers.Classifier;
 import weka.core.Instances;
 import weka.core.Instance;
@@ -21,7 +19,7 @@ public class NBTubes implements Classifier {
     
     public ArrayList<ArrayList<ArrayList<Integer>>> dataClassifier;
     public ArrayList<ArrayList<ArrayList<Double>>> infoClassifier;
-    //Urutan: 1. Atribut, 2. Domain
+    //Urutan: 1. Atribut, 2. Domain, 3. Kelas
     //Kelas dan domain beserta jumlah instance nya dijumlah dari setiap data
     //domain dari sebuah atribut
     
@@ -33,12 +31,10 @@ public class NBTubes implements Classifier {
     @Override
     public void buildClassifier(Instances data) {
         int i, j, k, l;
-        //int sumAttr[] = {0, 0, 0, 0};
         int sumVal = 0;
         int[] sumClass = {0, 0, 0};
         
         int numAttr = data.get(0).numAttributes();
-        //data.get(0).attribute(i).numValues() ini jumlah tipe nilai tiap atribut ke i
         int numClasses = data.get(0).attribute(numAttr-1).numValues();
         
         //building data structure
@@ -62,11 +58,9 @@ public class NBTubes implements Classifier {
                     dataClassifier.get(i).get(j).add(0);
                     infoClassifier.get(i).get(j).add(0.0);
                     k++;
-                }
-                
+                }   
                 j++;
-            }
-            
+            }   
             i++;
         }
         
@@ -92,7 +86,6 @@ public class NBTubes implements Classifier {
         }
         
         //getting double values, jumlahNilaiXdiAtrY/jumlahAtrYDiKelasZ
-        
         i = 0;
         while (i < dataClassifier.size())
         {
@@ -108,12 +101,10 @@ public class NBTubes implements Classifier {
                             set(k, (double)sumVal/sumClass[k]);
                     k++;
                 }
-                
                 j++;
             }
             i++;
         }
-        
     }
     
     @Override
