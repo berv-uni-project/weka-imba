@@ -5,12 +5,14 @@
  */
 package ui;
 
+import imba.classifier.NBTubes;
 import java.io.File;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.JFileChooser;
 import javax.swing.plaf.metal.MetalLookAndFeel;
 import javax.swing.plaf.metal.OceanTheme;
+import weka.classifiers.bayes.NaiveBayes;
 import weka.core.Instances;
 import weka.core.converters.ConverterUtils;
 
@@ -147,6 +149,11 @@ public class MainWindow extends javax.swing.JFrame {
 
         executeButton.setText("Execute");
         executeButton.setEnabled(false);
+        executeButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                executeButtonActionPerformed(evt);
+            }
+        });
         runningPane.add(executeButton);
 
         allPanel.add(runningPane);
@@ -224,11 +231,29 @@ public class MainWindow extends javax.swing.JFrame {
         }
     }//GEN-LAST:event_openButtonActionPerformed
 
+    private void executeButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_executeButtonActionPerformed
+        if (selectClassifierBox.getSelectedIndex() == 1) {
+            // FFNN 
+            
+        } else if (selectClassifierBox.getSelectedIndex() == 2) {
+            try {
+                // Naive Bayes
+                NBTubes nb = new NBTubes();
+                nb.buildClassifier(data);
+                // Cuman buat perbandingan
+                NaiveBayes ntest = new NaiveBayes();
+            } catch (Exception ex) {
+                Logger.getLogger(MainWindow.class.getName()).log(Level.SEVERE, null, ex);
+            }
+            
+        }
+    }//GEN-LAST:event_executeButtonActionPerformed
+
     /**
      * @param args the command line arguments
      */
     public static void main(String args[]) {
-        /* Set the Nimbus look and feel */
+        /* Set the Metal look and feel */
         //<editor-fold defaultstate="collapsed" desc=" Look and feel setting code (optional) ">
         /* If Nimbus (introduced in Java SE 6) is not available, stay with the default look and feel.
          * For details see http://download.oracle.com/javase/tutorial/uiswing/lookandfeel/plaf.html 
