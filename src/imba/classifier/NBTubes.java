@@ -21,14 +21,21 @@ public class NBTubes extends AbstractClassifier {
     
     public ArrayList<ArrayList<ArrayList<Integer>>> dataClassifier;
     public ArrayList<ArrayList<ArrayList<Double>>> infoClassifier;
+    public Instances dataset;
     protected Instances header_Instances;
     //Urutan: 1. Atribut, 2. Domain, 3. Kelas
     //Kelas dan domain beserta jumlah instance nya dijumlah dari setiap data
     //domain dari sebuah atribut
+	
+    public int[] sumClass;
+    public int dataSize;
     
     public NBTubes() {
         dataClassifier = new ArrayList<>();
         infoClassifier = new ArrayList<>();
+        dataset = null;
+        sumClass = null;
+        dataSize = 0;
     }
     
     @Override
@@ -129,9 +136,35 @@ public class NBTubes extends AbstractClassifier {
         //Fungsi ini menentukan probabilitas setiap kelas instance untuk instance 
         //yang ada di parameter fungsi
         
-        double[] a = new double[dataClassifier.get(0).get(0).size()];
+        //kasih filter
+        Filter f = new NumericToNominal();
         
-        //ambil dari infoClassifier
+        f.setInputFormat(dataset);
+        
+        f.input(instance);
+        
+        f.batchFinished();
+        
+        instance = f.output();
+        
+        //Classify~
+        double[] a = new double[infoClassifier.get(0).get(0).size()];
+        
+        int i = 0;
+        int j = 0;
+        
+        while (i < a.length) {
+            a[i] = (double) sumClass[i] / dataSize;
+            
+            j = 0;
+            while (j < infoClassifier.size()) {
+                a[i] *= infoClassifier.get(j).get((int)instance.value(j)).get(i);
+                
+                j++;
+            }
+            
+            i++;
+        }
         
         return a;
     }
@@ -141,10 +174,22 @@ public class NBTubes extends AbstractClassifier {
         //Fungsi ini mengembalikan indeks kelas dengan probabilitas tertinggi
         
         //panggil distributionForInstance
+		double[] a = distributionForInstance(instance);
         
         //cari max value, return indeks kelas paling tinggi wqwqw
+		double max = 0.0;
+		int maxIdx = 0;
+		int i = 0;
+		while (i < a.length) {
+			if (a[i] > max) {
+				max = a[i];
+				maxIdx = i;
+			}
+			
+			i++;
+		}
         
-        return 0;
+        return maxIdx;
     }
     
     @Override
