@@ -5,6 +5,15 @@
  */
 package ui;
 
+import java.io.File;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import javax.swing.JFileChooser;
+import javax.swing.plaf.metal.MetalLookAndFeel;
+import javax.swing.plaf.metal.OceanTheme;
+import weka.core.Instances;
+import weka.core.converters.ConverterUtils;
+
 /**
  *
  * @author Bervianto Leo P
@@ -27,9 +36,34 @@ public class MainWindow extends javax.swing.JFrame {
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
+        horizontalFillLeft = new javax.swing.Box.Filler(new java.awt.Dimension(20, 0), new java.awt.Dimension(30, 0), new java.awt.Dimension(50, 0));
+        allPanel = new javax.swing.JPanel();
+        mainPanel = new javax.swing.JPanel();
+        openButton = new javax.swing.JButton();
+        saveButton = new javax.swing.JButton();
+        datasetStatusPanel = new javax.swing.JPanel();
+        relationLabel = new javax.swing.JLabel();
+        relationValue = new javax.swing.JLabel();
+        attributesLabel = new javax.swing.JLabel();
+        attributesValue = new javax.swing.JLabel();
+        instancesLabel = new javax.swing.JLabel();
+        instancesValue = new javax.swing.JLabel();
+        sumofweightsLabel = new javax.swing.JLabel();
+        sumofweightsValue = new javax.swing.JLabel();
+        selectFilterPanel = new javax.swing.JPanel();
+        selectFilterBox = new javax.swing.JComboBox<>();
+        filterButton = new javax.swing.JButton();
         selectClassifierPanel = new javax.swing.JPanel();
-        selectClassifierLabel = new javax.swing.JLabel();
         selectClassifierBox = new javax.swing.JComboBox<>();
+        runningPane = new javax.swing.JPanel();
+        resultLabel = new javax.swing.JLabel();
+        resultPane = new javax.swing.JScrollPane();
+        resultTextArea = new javax.swing.JTextArea();
+        executeButton = new javax.swing.JButton();
+        statusPanel = new javax.swing.JPanel();
+        statusLabel = new javax.swing.JLabel();
+        isiStatus = new javax.swing.JLabel();
+        horizontalFillRight = new javax.swing.Box.Filler(new java.awt.Dimension(20, 0), new java.awt.Dimension(30, 0), new java.awt.Dimension(50, 0));
         mainMenuBar = new javax.swing.JMenuBar();
         fileMenu = new javax.swing.JMenu();
         exitFileMenuItem = new javax.swing.JMenuItem();
@@ -37,19 +71,94 @@ public class MainWindow extends javax.swing.JFrame {
         aboutHelpMenuItem = new javax.swing.JMenuItem();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
+        setTitle("Weka Imba");
+        getContentPane().setLayout(new javax.swing.BoxLayout(getContentPane(), javax.swing.BoxLayout.X_AXIS));
+        getContentPane().add(horizontalFillLeft);
+
+        allPanel.setLayout(new javax.swing.BoxLayout(allPanel, javax.swing.BoxLayout.Y_AXIS));
+
+        openButton.setText("Open Dataset File");
+        openButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                openButtonActionPerformed(evt);
+            }
+        });
+        mainPanel.add(openButton);
+
+        saveButton.setText("Save Dataset");
+        saveButton.setEnabled(false);
+        mainPanel.add(saveButton);
+
+        allPanel.add(mainPanel);
+
+        datasetStatusPanel.setLayout(new java.awt.GridLayout(2, 2));
+
+        relationLabel.setText("Relation :");
+        datasetStatusPanel.add(relationLabel);
+        datasetStatusPanel.add(relationValue);
+
+        attributesLabel.setText("Attributes :");
+        datasetStatusPanel.add(attributesLabel);
+        datasetStatusPanel.add(attributesValue);
+
+        instancesLabel.setText("Instances :");
+        datasetStatusPanel.add(instancesLabel);
+        datasetStatusPanel.add(instancesValue);
+
+        sumofweightsLabel.setText("Sum of Weights :");
+        datasetStatusPanel.add(sumofweightsLabel);
+        datasetStatusPanel.add(sumofweightsValue);
+
+        allPanel.add(datasetStatusPanel);
+
+        selectFilterLabel.setText("Select Filter : ");
+        selectFilterPanel.add(selectFilterLabel);
+
+        selectFilterBox.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "Discritize", "Numeric to Nominal" }));
+        selectFilterBox.setEnabled(false);
+        selectFilterPanel.add(selectFilterBox);
+
+        filterButton.setText("Filter");
+        filterButton.setEnabled(false);
+        selectFilterPanel.add(filterButton);
+
+        allPanel.add(selectFilterPanel);
 
         selectClassifierLabel.setText("Select Classifier : ");
         selectClassifierPanel.add(selectClassifierLabel);
 
         selectClassifierBox.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "FFNN", "Naive Bayes" }));
-        selectClassifierBox.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                selectClassifierBoxActionPerformed(evt);
-            }
-        });
+        selectClassifierBox.setEnabled(false);
         selectClassifierPanel.add(selectClassifierBox);
 
-        getContentPane().add(selectClassifierPanel, java.awt.BorderLayout.CENTER);
+        allPanel.add(selectClassifierPanel);
+
+        runningPane.setLayout(new javax.swing.BoxLayout(runningPane, javax.swing.BoxLayout.LINE_AXIS));
+
+        resultLabel.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
+        resultLabel.setText("Result :");
+        runningPane.add(resultLabel);
+
+        resultTextArea.setColumns(20);
+        resultTextArea.setRows(5);
+        resultPane.setViewportView(resultTextArea);
+
+        runningPane.add(resultPane);
+
+        executeButton.setText("Execute");
+        executeButton.setEnabled(false);
+        runningPane.add(executeButton);
+
+        allPanel.add(runningPane);
+
+        statusLabel.setText("Working Status :");
+        statusPanel.add(statusLabel);
+        statusPanel.add(isiStatus);
+
+        allPanel.add(statusPanel);
+
+        getContentPane().add(allPanel);
+        getContentPane().add(horizontalFillRight);
 
         fileMenu.setText("File");
 
@@ -75,13 +184,45 @@ public class MainWindow extends javax.swing.JFrame {
         pack();
     }// </editor-fold>//GEN-END:initComponents
 
-    private void selectClassifierBoxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_selectClassifierBoxActionPerformed
-        // TODO add your handling code here:
-    }//GEN-LAST:event_selectClassifierBoxActionPerformed
-
     private void exitFileMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_exitFileMenuItemActionPerformed
         System.exit(0);
     }//GEN-LAST:event_exitFileMenuItemActionPerformed
+
+    private void openButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_openButtonActionPerformed
+        if(evt.getSource() == this.openButton) {
+            this.filechooser.setAcceptAllFileFilterUsed(false);
+            this.filechooser.removeChoosableFileFilter(modelformat);
+            this.filechooser.setFileFilter(arffformat);
+            int returnVal = this.filechooser.showOpenDialog(MainWindow.this);
+            
+            if (returnVal == JFileChooser.APPROVE_OPTION) {
+                try {
+                    File file = this.filechooser.getSelectedFile();
+                    this.isiStatus.setText("Membuka: " + file.getName() + ".\n");
+                    this.data = ConverterUtils.DataSource.read(file.getAbsolutePath());
+                    if (this.data.classIndex() == -1) {
+                        this.data.setClassIndex(this.data.numAttributes() - 1);
+                    }
+                    this.instancesValue.setText(String.valueOf(this.data.numInstances()));
+                    this.attributesLabel.setText(String.valueOf(this.data.numAttributes()));
+                    this.relationValue.setText(String.valueOf(this.data.relationName()));
+                    this.sumofweightsValue.setText(String.valueOf(this.data.sumOfWeights()));
+                    this.saveButton.setEnabled(true);
+                    this.filterButton.setEnabled(true);
+                    this.executeButton.setEnabled(true);
+                    this.selectFilterBox.setEnabled(true);
+                    this.selectClassifierBox.setEnabled(true);
+                    //this.addInstanceButton.setEnabled(true);
+                    //this.loadModelButton.setEnabled(true);
+                    this.isiStatus.setText("Membuka berkas "+file.getName()+"berhasil!");
+                } catch (Exception ex) {
+                    Logger.getLogger(MainWindow.class.getName()).log(Level.SEVERE, null, ex);
+                }
+            } else {
+                this.isiStatus.setText("Open command cancelled by user.\n");
+            }
+        }
+    }//GEN-LAST:event_openButtonActionPerformed
 
     /**
      * @param args the command line arguments
@@ -94,8 +235,9 @@ public class MainWindow extends javax.swing.JFrame {
          */
         try {
             for (javax.swing.UIManager.LookAndFeelInfo info : javax.swing.UIManager.getInstalledLookAndFeels()) {
-                if ("Nimbus".equals(info.getName())) {
+                if ("Metal".equals(info.getName())) {
                     javax.swing.UIManager.setLookAndFeel(info.getClassName());
+                    MetalLookAndFeel.setCurrentTheme(new OceanTheme());
                     break;
                 }
             }
@@ -117,15 +259,46 @@ public class MainWindow extends javax.swing.JFrame {
             }
         });
     }
-
+    // Variables Data
+    private Instances data;
+    private final JFileChooser filechooser = new JFileChooser();
+    private final ArffFile arffformat = new ArffFile();
+    private final ModelFile modelformat = new ModelFile();
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JMenuItem aboutHelpMenuItem;
     private javax.swing.JMenu aboutMenu;
+    private javax.swing.JPanel allPanel;
+    private javax.swing.JLabel attributesLabel;
+    private javax.swing.JLabel attributesValue;
+    private javax.swing.JPanel datasetStatusPanel;
+    private javax.swing.JButton executeButton;
     private javax.swing.JMenuItem exitFileMenuItem;
     private javax.swing.JMenu fileMenu;
+    private javax.swing.JButton filterButton;
+    private javax.swing.Box.Filler horizontalFillLeft;
+    private javax.swing.Box.Filler horizontalFillRight;
+    private javax.swing.JLabel instancesLabel;
+    private javax.swing.JLabel instancesValue;
+    private javax.swing.JLabel isiStatus;
     private javax.swing.JMenuBar mainMenuBar;
+    private javax.swing.JPanel mainPanel;
+    private javax.swing.JButton openButton;
+    private javax.swing.JLabel relationLabel;
+    private javax.swing.JLabel relationValue;
+    private javax.swing.JLabel resultLabel;
+    private javax.swing.JScrollPane resultPane;
+    private javax.swing.JTextArea resultTextArea;
+    private javax.swing.JPanel runningPane;
+    private javax.swing.JButton saveButton;
     private javax.swing.JComboBox<String> selectClassifierBox;
-    private javax.swing.JLabel selectClassifierLabel;
+    private final javax.swing.JLabel selectClassifierLabel = new javax.swing.JLabel();
     private javax.swing.JPanel selectClassifierPanel;
+    private javax.swing.JComboBox<String> selectFilterBox;
+    private final javax.swing.JLabel selectFilterLabel = new javax.swing.JLabel();
+    private javax.swing.JPanel selectFilterPanel;
+    private javax.swing.JLabel statusLabel;
+    private javax.swing.JPanel statusPanel;
+    private javax.swing.JLabel sumofweightsLabel;
+    private javax.swing.JLabel sumofweightsValue;
     // End of variables declaration//GEN-END:variables
 }
