@@ -6,12 +6,16 @@
 package imba.classifier;
 
 import java.util.ArrayList;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import weka.classifiers.AbstractClassifier;
 import weka.classifiers.Classifier;
 import weka.core.Instances;
 import weka.core.Instance;
 import weka.core.Capabilities;
 import weka.core.Capabilities.Capability;
+import weka.filters.Filter;
+import weka.filters.unsupervised.attribute.NumericToNominal;
 
 /**
  *
@@ -39,12 +43,12 @@ public class NBTubes extends AbstractClassifier {
         dataSize = 0;
     }
 	
-	@Override
-    public void buildClassifier(Instances data) {
+    @Override
+    public void buildClassifier(Instances data) throws Exception {
         buildClassifier(data, 0);
     }
     
-    public void buildClassifier(Instances data, int cI) {
+    public void buildClassifier(Instances data, int cI) throws Exception {
 		// test data
         getCapabilities().testWithFail(data);
         
