@@ -29,6 +29,7 @@ public class NBTubes extends AbstractClassifier {
 	
     public int[] sumClass;
     public int dataSize;
+    public int classIdx;
     
     public NBTubes() {
         dataClassifier = new ArrayList<>();
@@ -37,11 +38,14 @@ public class NBTubes extends AbstractClassifier {
         sumClass = null;
         dataSize = 0;
     }
+	
+	@Override
+    public void buildClassifier(Instances data) {
+        buildClassifier(data, 0);
+    }
     
-    @Override
-    public void buildClassifier(Instances data) throws Exception {
-        
-        // test data
+    public void buildClassifier(Instances data, int cI) {
+		// test data
         getCapabilities().testWithFail(data);
         
         // hapus data dengan kelas yang hilang
@@ -50,60 +54,106 @@ public class NBTubes extends AbstractClassifier {
         
         // copy data
         header_Instances = new Instances(data);
-        
-        
-        
-        /*
-        int i, j, k, l;
+		
+		int i, j, k, l;
         int sumVal = 0;
-        int[] sumClass = {0, 0, 0};
         
         int numAttr = data.get(0).numAttributes();
-        int numClasses = data.get(0).attribute(numAttr-1).numValues();
+        //int numClasses = data.get(0).attribute(numAttr-1).numValues();
+        int numClasses = data.get(0).attribute(classIdx).numValues();
+        
+        //kasih filter
+        Filter f = new NumericToNominal();
+        try {
+            f.setInputFormat(data);
+            
+            for (Instance i1 : data) {
+                f.input(i1);
+            }
+            
+            f.batchFinished();
+        } catch (Exception ex) {
+            Logger.getLogger(NBTubes.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        
+        Instances filteredData = f.getOutputFormat();
+        
+        Instance p;
+
+        while ((p = f.output()) != null) {
+            filteredData.add(p);
+        }
+        
+        //masukin dataset dari filteredData
+        dataset = filteredData;
         
         //building data structure
+        sumClass = new int[numClasses];
         dataClassifier = new ArrayList<>();
+        dataSize = filteredData.size();
+        classIdx = cI;
         
-        i = 0;
-        while (i < (numAttr-1)){
-            //add new attribute, blm ada domainnya
-            dataClassifier.add(new ArrayList<>());
-            infoClassifier.add(new ArrayList<>());
+        int a = 0;
+        i = a;
+        while (a < numAttr) {
+            if (a != classIdx) {
+                //add new attribute, blsm ada domainnya
+                dataClassifier.add(new ArrayList<>());
+                infoClassifier.add(new ArrayList<>());
             
-            j = 0;
-            while (j < data.get(0).attribute(i).numValues()) {
-                //add new domain pada suatu atribut, blm ada perbedaan kelas
-                dataClassifier.get(i).add(new ArrayList<>());
-                infoClassifier.get(i).add(new ArrayList<>());
-                
-                k = 0;
-                while (k < data.get(0).attribute(numAttr-1).numValues()) {
-                    //add new kelas di dalam atribut, domain spesifik                    
-                    dataClassifier.get(i).get(j).add(0);
-                    infoClassifier.get(i).get(j).add(0.0);
-                    k++;
-                }   
-                j++;
-            }   
+                j = 0;
+                while (j < filteredData.get(0).attribute(i).numValues()) {
+                    //add new domain pada suatu atribut, blm ada perbedaan kelas
+                    dataClassifier.get(i).add(new ArrayList<>());
+                    infoClassifier.get(i).add(new ArrayList<>());
+
+                    k = 0;
+                    while (k < filteredData.get(0).attribute(classIdx).numValues()) {
+                        //add new kelas di dalam atribut, domain spesifik                    
+                        dataClassifier.get(i).get(j).add(0);
+                        infoClassifier.get(i).get(j).add(0.0);
+                        k++;
+                    }   
+                    j++;
+                }
+            } else {
+                i--;
+            }
+               
+            a++;
             i++;
         }
         
+        System.out.println("classId = " + classIdx);
+        
         //reading from instances
         i = 0;
-        while (i < data.size()) {
-            j = 0;
-            while (j < numAttr-1) {
-                dataClassifier.get(j).get((int) data.get(i).value(j)).
-                        set((int) data.get(i).value(numAttr-1), 
-                                dataClassifier.get(j).get(
-                                        (int) data.get(i).value(j)).get(
-                                                (int) data.get(i).value(numAttr-1))+1);
-                
-                if (j == 0) {
-                    sumClass[(int) data.get(i).value(numAttr-1)]++;
+        while (i < filteredData.size()) {
+            a = 0;
+            j = a;
+            while (a < numAttr) {
+                if  (a != classIdx) {
+                    dataClassifier.get(j).
+                            get((int) filteredData.
+                                        get(i).
+                                            value(j)).
+                            set((int) filteredData.get(i).value(classIdx), 
+                                    dataClassifier.get(j).get(
+                                            (int) filteredData.get(i).value(j)).get(
+                                                    (int) filteredData.get(i).value(classIdx))+1);
+
+                    if (j == 0) {
+                        sumClass[(int) filteredData.
+                                get(i).
+                                value(classIdx)]++;
+                    }
+                }
+                else {
+                    j--;
                 }
                 
                 j++;
+                a++;
             }
             
             i++;
@@ -128,7 +178,7 @@ public class NBTubes extends AbstractClassifier {
                 j++;
             }
             i++;
-        }*/
+        }
     }
     
     @Override
@@ -152,14 +202,24 @@ public class NBTubes extends AbstractClassifier {
         
         int i = 0;
         int j = 0;
-        
-        while (i < a.length) {
+        int k = 0;
+        while (i < (a.length)) {
             a[i] = (double) sumClass[i] / dataSize;
             
+            System.out.println("infoClassifier.size() = " + infoClassifier.size());
+            
             j = 0;
+            k = 0;
             while (j < infoClassifier.size()) {
-                a[i] *= infoClassifier.get(j).get((int)instance.value(j)).get(i);
+                    a[i] *= infoClassifier.get(j).
+                            get((int)instance.
+                                    value(k)). //salah di sini~
+                                get(i);
+
+                    System.out.println("j = " + j);
+                    System.out.println("k = " + k);
                 
+                k++;
                 j++;
             }
             
