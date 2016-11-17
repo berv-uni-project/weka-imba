@@ -5,6 +5,7 @@
  */
 package ui;
 
+import imba.classifier.FFNN;
 import imba.classifier.NBTubes;
 import java.io.File;
 import java.util.Random;
@@ -237,6 +238,12 @@ public class MainWindow extends javax.swing.JFrame {
         if(evt.getSource()==this.executeButton) {
             if (selectClassifierBox.getSelectedIndex() == 0) {
                 // FFNN 
+                FFNN fn = new FFNN();
+                try {
+                    fn.buildClassifier(this.data);
+                } catch (Exception ex) {
+                    Logger.getLogger(MainWindow.class.getName()).log(Level.SEVERE, null, ex);
+                }
 
             } else if (selectClassifierBox.getSelectedIndex() == 1) {
                 try {
