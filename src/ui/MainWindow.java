@@ -7,11 +7,13 @@ package ui;
 
 import imba.classifier.NBTubes;
 import java.io.File;
+import java.util.Random;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.JFileChooser;
 import javax.swing.plaf.metal.MetalLookAndFeel;
 import javax.swing.plaf.metal.OceanTheme;
+import weka.classifiers.Evaluation;
 import weka.classifiers.bayes.NaiveBayes;
 import weka.core.Instances;
 import weka.core.converters.ConverterUtils;
@@ -221,7 +223,7 @@ public class MainWindow extends javax.swing.JFrame {
                     this.selectClassifierBox.setEnabled(true);
                     //this.addInstanceButton.setEnabled(true);
                     //this.loadModelButton.setEnabled(true);
-                    this.isiStatus.setText("Membuka berkas "+file.getName()+"berhasil!");
+                    this.isiStatus.setText("Membuka berkas "+file.getName()+" berhasil!");
                 } catch (Exception ex) {
                     Logger.getLogger(MainWindow.class.getName()).log(Level.SEVERE, null, ex);
                 }
@@ -232,20 +234,40 @@ public class MainWindow extends javax.swing.JFrame {
     }//GEN-LAST:event_openButtonActionPerformed
 
     private void executeButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_executeButtonActionPerformed
-        if (selectClassifierBox.getSelectedIndex() == 1) {
-            // FFNN 
-            
-        } else if (selectClassifierBox.getSelectedIndex() == 2) {
-            try {
-                // Naive Bayes
-                NBTubes nb = new NBTubes();
-                nb.buildClassifier(data);
-                // Cuman buat perbandingan
-                NaiveBayes ntest = new NaiveBayes();
-            } catch (Exception ex) {
-                Logger.getLogger(MainWindow.class.getName()).log(Level.SEVERE, null, ex);
+        if(evt.getSource()==this.executeButton) {
+            if (selectClassifierBox.getSelectedIndex() == 0) {
+                // FFNN 
+
+            } else if (selectClassifierBox.getSelectedIndex() == 1) {
+                try {
+                    Evaluation evaluation = new Evaluation(this.data);
+                    // Naive Bayes
+                    NBTubes nb = new NBTubes();
+                    nb.buildClassifier(data);
+                    // Cuman buat perbandingan
+                    NaiveBayes ntest = new NaiveBayes();
+                    ntest.buildClassifier(data);
+
+                    // Evaluate
+                    evaluation.crossValidateModel(nb, this.data, 10, new Random(1));
+                    this.resultTextArea.setText(evaluation.toSummaryString("\n== Summary ==\n",false));
+                    this.resultTextArea.append(evaluation.toClassDetailsString("\n== Detailed Accuracy By Class ==\n"));
+                    this.resultTextArea.append(evaluation.toMatrixString("\n== Confusion Matrix ==\n"));
+                    this.isiStatus.setText("Running Cross Validation Completed");
+                    //this.saveModelButton.setEnabled(true);
+                    // Evaluate Comparing
+                    /*
+                    evaluation.crossValidateModel(ntest, this.data, 10, new Random(1));
+                    this.resultTextArea.append(evaluation.toSummaryString("\n== Summary ==\n",true));
+                    this.resultTextArea.append(evaluation.toClassDetailsString("\n== Detailed Accuracy By Class ==\n"));
+                    this.resultTextArea.append(evaluation.toMatrixString("\n== Confusion Matrix ==\n"));
+                    this.isiStatus.setText("Running Cross Validation Completed");*/
+                    //this.saveModelButton.setEnabled(true);
+
+                } catch (Exception ex) {
+                    Logger.getLogger(MainWindow.class.getName()).log(Level.SEVERE, null, ex);
+                }
             }
-            
         }
     }//GEN-LAST:event_executeButtonActionPerformed
 
