@@ -215,7 +215,7 @@ public class MainWindow extends javax.swing.JFrame {
                         this.data.setClassIndex(this.data.numAttributes() - 1);
                     }
                     this.instancesValue.setText(String.valueOf(this.data.numInstances()));
-                    this.attributesLabel.setText(String.valueOf(this.data.numAttributes()));
+                    this.attributesValue.setText(String.valueOf(this.data.numAttributes()));
                     this.relationValue.setText(String.valueOf(this.data.relationName()));
                     this.sumofweightsValue.setText(String.valueOf(this.data.sumOfWeights()));
                     this.saveButton.setEnabled(true);
