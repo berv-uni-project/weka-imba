@@ -56,11 +56,12 @@ public class MainWindow extends javax.swing.JFrame {
         instancesValue = new javax.swing.JLabel();
         sumofweightsLabel = new javax.swing.JLabel();
         sumofweightsValue = new javax.swing.JLabel();
-        selectFilterPanel = new javax.swing.JPanel();
-        selectFilterBox = new javax.swing.JComboBox<>();
-        filterButton = new javax.swing.JButton();
-        selectClassifierPanel = new javax.swing.JPanel();
+        selectMethodePanel = new javax.swing.JPanel();
         selectClassifierBox = new javax.swing.JComboBox<>();
+        selectEvaluationBox = new javax.swing.JComboBox<>();
+        selectEvaluationPanel = new javax.swing.JPanel();
+        jLabel1 = new javax.swing.JLabel();
+        jTextField1 = new javax.swing.JTextField();
         runningPane = new javax.swing.JPanel();
         resultLabel = new javax.swing.JLabel();
         resultPane = new javax.swing.JScrollPane();
@@ -117,27 +118,30 @@ public class MainWindow extends javax.swing.JFrame {
 
         allPanel.add(datasetStatusPanel);
 
-        selectFilterLabel.setText("Select Filter : ");
-        selectFilterPanel.add(selectFilterLabel);
-
-        selectFilterBox.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "Discritize", "Numeric to Nominal" }));
-        selectFilterBox.setEnabled(false);
-        selectFilterPanel.add(selectFilterBox);
-
-        filterButton.setText("Filter");
-        filterButton.setEnabled(false);
-        selectFilterPanel.add(filterButton);
-
-        allPanel.add(selectFilterPanel);
-
         selectClassifierLabel.setText("Select Classifier : ");
-        selectClassifierPanel.add(selectClassifierLabel);
+        selectMethodePanel.add(selectClassifierLabel);
 
         selectClassifierBox.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "FFNN", "Naive Bayes" }));
         selectClassifierBox.setEnabled(false);
-        selectClassifierPanel.add(selectClassifierBox);
+        selectMethodePanel.add(selectClassifierBox);
 
-        allPanel.add(selectClassifierPanel);
+        selectEvaluationLabel.setText("Select Evaluation :");
+        selectMethodePanel.add(selectEvaluationLabel);
+
+        selectEvaluationBox.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "Cross Validation", "Split Test" }));
+        selectEvaluationBox.setEnabled(false);
+        selectMethodePanel.add(selectEvaluationBox);
+
+        allPanel.add(selectMethodePanel);
+
+        jLabel1.setText("Jumlah Iterasi :");
+        selectEvaluationPanel.add(jLabel1);
+
+        jTextField1.setHorizontalAlignment(javax.swing.JTextField.CENTER);
+        jTextField1.setPreferredSize(new java.awt.Dimension(40, 20));
+        selectEvaluationPanel.add(jTextField1);
+
+        allPanel.add(selectEvaluationPanel);
 
         runningPane.setLayout(new javax.swing.BoxLayout(runningPane, javax.swing.BoxLayout.LINE_AXIS));
 
@@ -145,6 +149,7 @@ public class MainWindow extends javax.swing.JFrame {
         resultLabel.setText("Result :");
         runningPane.add(resultLabel);
 
+        resultTextArea.setEditable(false);
         resultTextArea.setColumns(20);
         resultTextArea.setRows(5);
         resultPane.setViewportView(resultTextArea);
@@ -215,13 +220,12 @@ public class MainWindow extends javax.swing.JFrame {
                         this.data.setClassIndex(this.data.numAttributes() - 1);
                     }
                     this.instancesValue.setText(String.valueOf(this.data.numInstances()));
-                    this.attributesLabel.setText(String.valueOf(this.data.numAttributes()));
+                    this.attributesValue.setText(String.valueOf(this.data.numAttributes()));
                     this.relationValue.setText(String.valueOf(this.data.relationName()));
                     this.sumofweightsValue.setText(String.valueOf(this.data.sumOfWeights()));
                     this.saveButton.setEnabled(true);
-                    this.filterButton.setEnabled(true);
                     this.executeButton.setEnabled(true);
-                    this.selectFilterBox.setEnabled(true);
+                    this.selectEvaluationBox.setEnabled(true);
                     this.selectClassifierBox.setEnabled(true);
                     //this.addInstanceButton.setEnabled(true);
                     //this.loadModelButton.setEnabled(true);
@@ -333,12 +337,13 @@ public class MainWindow extends javax.swing.JFrame {
     private javax.swing.JButton executeButton;
     private javax.swing.JMenuItem exitFileMenuItem;
     private javax.swing.JMenu fileMenu;
-    private javax.swing.JButton filterButton;
     private javax.swing.Box.Filler horizontalFillLeft;
     private javax.swing.Box.Filler horizontalFillRight;
     private javax.swing.JLabel instancesLabel;
     private javax.swing.JLabel instancesValue;
     private javax.swing.JLabel isiStatus;
+    private javax.swing.JLabel jLabel1;
+    private javax.swing.JTextField jTextField1;
     private javax.swing.JMenuBar mainMenuBar;
     private javax.swing.JPanel mainPanel;
     private javax.swing.JButton openButton;
@@ -351,10 +356,10 @@ public class MainWindow extends javax.swing.JFrame {
     private javax.swing.JButton saveButton;
     private javax.swing.JComboBox<String> selectClassifierBox;
     private final javax.swing.JLabel selectClassifierLabel = new javax.swing.JLabel();
-    private javax.swing.JPanel selectClassifierPanel;
-    private javax.swing.JComboBox<String> selectFilterBox;
-    private final javax.swing.JLabel selectFilterLabel = new javax.swing.JLabel();
-    private javax.swing.JPanel selectFilterPanel;
+    private javax.swing.JComboBox<String> selectEvaluationBox;
+    private final javax.swing.JLabel selectEvaluationLabel = new javax.swing.JLabel();
+    private javax.swing.JPanel selectEvaluationPanel;
+    private javax.swing.JPanel selectMethodePanel;
     private javax.swing.JLabel statusLabel;
     private javax.swing.JPanel statusPanel;
     private javax.swing.JLabel sumofweightsLabel;
