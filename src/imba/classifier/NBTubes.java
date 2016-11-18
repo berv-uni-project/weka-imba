@@ -75,11 +75,11 @@ public class NBTubes extends AbstractClassifier {
         int sumVal = 0;
         
         int numAttr = dataset.numAttributes();
-        
+/*        
         NumericToNominal filter = new NumericToNominal();
         filter.setInputFormat(this.dataset);
         this.dataset = Filter.useFilter(this.dataset, filter);
-        
+*/        
         // discretize
         Discretize discret = new Discretize();
         discret.setInputFormat(dataset);
