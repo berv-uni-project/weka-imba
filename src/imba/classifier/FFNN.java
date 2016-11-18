@@ -7,6 +7,7 @@ package imba.classifier;
 
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Random;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import weka.classifiers.AbstractClassifier;
@@ -22,21 +23,30 @@ import weka.filters.unsupervised.attribute.Normalize;
  */
 public class FFNN extends AbstractClassifier implements Serializable {
     //input pengguna untuk pengaturan topologi
-    private int nHidden;
-    private int nNeuron;
+    private int nHidden; //ju
+    private int nNeuron; 
     //private double momentum;
     private int nEpoch;
+    private int nAttribute; //ganti dengan nilai sebenarnya dari instances
+    private int nOutput; //ganti dengan nilai sebenarnya dari instances
     private double learningRate;
+    protected static Random random = new Random();
     
-    //learning rate sementara definisi sendiri
-        
+    //Array of weight
+    private ArrayList<ArrayList<Double>> Weight1;
+    private ArrayList<ArrayList<Double>> Weight2;                
             
     public FFNN() {
+        //set variable ke nilai default masing-masing
         this.nHidden = 0;
         this.nNeuron = 0;
         //this.momentum = 0.2;
         this.learningRate = 0.3;
         this.nEpoch = 500;
+        this.nAttribute = 3;
+        this.nOutput = 3;
+        
+        Weight1 = new ArrayList<>();
     } 
     
         @Override
@@ -70,7 +80,62 @@ public class FFNN extends AbstractClassifier implements Serializable {
         
         //System.out.println(filteredData.toString());
         
-        //jumlah atribut masukan
-        int numAttr = data.get(0).numAttributes();
-    }  
+    }
+    
+    //prosedur untuk mendefinisikan bobot dari penghubung neuron
+    //nilai yang di-assign antara 0.3 - 1
+    private void generateRandomWeight () { 
+       if (nHidden == 0) {
+           for (int i = 1; i <= nAttribute; i++) {
+                Weight1.add(new ArrayList<>());
+                for (int j = 0; j <= nOutput; j++) {
+                    Weight1.get(i).add(randomInRange(-1, 1));
+                }
+           }
+       } else if (nHidden == 1) {
+           for (int i = 1; i <= nAttribute; i++) {
+                Weight1.add(new ArrayList<>());
+                for (int j = 0; j <= nOutput; j++) {
+                    Weight1.get(i).add(randomInRange(-1, 1));
+                }
+           }
+           for (int i = 1; i <= nAttribute; i++) {
+                Weight2.add(new ArrayList<>());
+                for (int j = 0; j <= nOutput; j++) {
+                    Weight2.get(i).add(randomInRange(-1, 1));
+                }
+           }
+       }
+    }
+    
+    public static double randomInRange(double min, double max) {
+      double range = max - min;
+      double scaled = random.nextDouble() * range;
+      double shifted = scaled + min;
+      return shifted; // == (rand.nextDouble() * (max-min)) + min;
+    }   
+    
+    //setter untuk jumlah hidden layer dalam MLP
+    //nilai default = 0
+    public void setHiddenLayer(int layer) {
+        this.nHidden = layer;
+    }
+    
+    //setter untuk jumlah neuron dalam hidden layer
+    //nilai default = 0
+    public void setNeuronNum(int num) {
+        this.nNeuron = num;
+    }
+    
+    //setter untuk jumlah iterasi dalam learning
+    //nilai default = 500
+    public void setEpoch(int i) {
+        this.nEpoch = i;
+    }
+    
+    //setter untuk nilai learning rate
+    //nilai default = 0.3
+    public void setLearningRate(int lr) {
+        this.learningRate = lr;
+    }
 }
