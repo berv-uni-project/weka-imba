@@ -14,6 +14,7 @@ import java.util.logging.Logger;
 import javax.swing.JFileChooser;
 import javax.swing.plaf.metal.MetalLookAndFeel;
 import javax.swing.plaf.metal.OceanTheme;
+import weka.classifiers.Classifier;
 import weka.classifiers.Evaluation;
 import weka.classifiers.bayes.NaiveBayes;
 import weka.core.Instances;
@@ -238,7 +239,7 @@ public class MainWindow extends javax.swing.JFrame {
         if(evt.getSource()==this.executeButton) {
             if (selectClassifierBox.getSelectedIndex() == 0) {
                 // FFNN 
-                FFNN fn = new FFNN();
+                Classifier fn = new FFNN();
                 try {
                     fn.buildClassifier(this.data);
                 } catch (Exception ex) {
