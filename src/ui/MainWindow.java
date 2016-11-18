@@ -240,6 +240,10 @@ public class MainWindow extends javax.swing.JFrame {
             if (selectClassifierBox.getSelectedIndex() == 0) {
                 // FFNN 
                 Classifier fn = new FFNN();
+                
+                //kalau mau rubah nilai hidden dan jumlah neuron lakukan disini
+                //fn.setHiddenLayer(1);
+                //fn.setNeuronNum(5);
                 try {
                     fn.buildClassifier(this.data);
                 } catch (Exception ex) {
