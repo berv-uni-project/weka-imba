@@ -23,41 +23,42 @@ import weka.filters.unsupervised.attribute.Normalize;
  */
 public class FFNN extends AbstractClassifier implements Serializable {
     //input pengguna untuk pengaturan topologi
-    private int nHidden; //ju
-    private int nNeuron; 
-    //private double momentum;
-    private int nEpoch;
+    private int nHidden; //jumlah hidden layer
+    private int nNeuron; //jumlah neuron dalam hidden layer
+    private int nEpoch; //jumlah iterasi
     private int nAttribute; //ganti dengan nilai sebenarnya dari instances
     private int nOutput; //ganti dengan nilai sebenarnya dari instances
-    private double learningRate;
+    private double learningRate; //nilai learning rate
+    
     protected static Random random = new Random();
     
     //Array of weight
-    private ArrayList<ArrayList<Double>> Weight1;
-    private ArrayList<ArrayList<Double>> Weight2;                
+    private Double[][] Weight1;
+    private Double[][] Weight2;                
             
     public FFNN() {
         //set variable ke nilai default masing-masing
         this.nHidden = 0;
         this.nNeuron = 0;
-        //this.momentum = 0.2;
         this.learningRate = 0.3;
         this.nEpoch = 500;
-        this.nAttribute = 3;
-        this.nOutput = 3;
-        
-        Weight1 = new ArrayList<>();
+        //this.nAttribute = 3;
     } 
     
         @Override
-    public void buildClassifier (Instances data) throws Exception {
+    public void buildClassifier (Instances data) throws Exception {        
+        nOutput = data.numClasses();
+        nAttribute = data.numAttributes() - 1;
+        
+        generateRandomWeight();
+        
         //cek kelas, bisa di-handle atau tidak
         getCapabilities().testWithFail(data);
         
         //bersihkan instances yang ada dari instances yang kelasnya miss
         data = new Instances(data);
         data.deleteWithMissingClass();
-        System.out.println(data.toString());
+        //System.out.println(data.toString());
                 
         //normalisasi
         Normalize norm = new Normalize();
@@ -76,43 +77,51 @@ public class FFNN extends AbstractClassifier implements Serializable {
             filter.batchFinished();
         } catch (Exception ex) {
             Logger.getLogger(NBTubes.class.getName()).log(Level.SEVERE, null, ex);
-        }     
-        
-        //System.out.println(filteredData.toString());
-        
+        }           
     }
     
     //prosedur untuk mendefinisikan bobot dari penghubung neuron
     //nilai yang di-assign antara 0.3 - 1
     private void generateRandomWeight () { 
        if (nHidden == 0) {
+           Weight1 = new Double[nAttribute+1][nOutput+1];
+           //System.out.println("nAtt" + nAttribute);
+           //System.out.println("nOut" + nOutput);
            for (int i = 1; i <= nAttribute; i++) {
-                Weight1.add(new ArrayList<>());
-                for (int j = 0; j <= nOutput; j++) {
-                    Weight1.get(i).add(randomInRange(-1, 1));
+                for (int j = 1; j <= nOutput; j++) {
+                    Weight1[i][j] = randomInRange(-1, 1);
+                    //System.out.println(i + " " + j + " " + Weight1[i][j]);
                 }
            }
-       } else if (nHidden == 1) {
-           for (int i = 1; i <= nAttribute; i++) {
-                Weight1.add(new ArrayList<>());
-                for (int j = 0; j <= nOutput; j++) {
-                    Weight1.get(i).add(randomInRange(-1, 1));
+           
+        } else if (nHidden == 1) {
+            Weight1 = new Double[nAttribute+1][nNeuron+1];
+            Weight2 = new Double[nNeuron+1][nOutput+1];
+            //System.out.println("nAtt" + nAttribute);
+            //System.out.println("nNeu" + nNeuron);
+            for (int i = 1; i <= nAttribute; i++) {
+                for (int j = 1; j <= nNeuron; j++) {
+                    Weight1[i][j] = randomInRange(-1, 1);
+                    //System.out.println(i + " " + j + " " + Weight1[i][j]);
                 }
-           }
-           for (int i = 1; i <= nAttribute; i++) {
-                Weight2.add(new ArrayList<>());
-                for (int j = 0; j <= nOutput; j++) {
-                    Weight2.get(i).add(randomInRange(-1, 1));
+            }
+            
+            //System.out.println("nNeu" + nNeuron);
+            //System.out.println("nOut" + nOutput);
+            for (int k = 1; k <= nNeuron; k++) {
+                for (int l = 1; l <= nOutput; l++) {
+                    Weight2[k][l] = randomInRange(-1, 1);
+                    //System.out.println(k + " " + l + " " + Weight2[k][l]);
                 }
-           }
-       }
+            }
+        }
     }
     
     public static double randomInRange(double min, double max) {
-      double range = max - min;
-      double scaled = random.nextDouble() * range;
-      double shifted = scaled + min;
-      return shifted; // == (rand.nextDouble() * (max-min)) + min;
+        double range = max - min;
+        double scaled = random.nextDouble() * range;
+        double shifted = scaled + min;
+        return shifted; // == (rand.nextDouble() * (max-min)) + min;
     }   
     
     //setter untuk jumlah hidden layer dalam MLP
