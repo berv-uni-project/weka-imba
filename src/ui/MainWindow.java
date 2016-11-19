@@ -17,8 +17,12 @@ import javax.swing.plaf.metal.OceanTheme;
 import weka.classifiers.Classifier;
 import weka.classifiers.Evaluation;
 import weka.classifiers.bayes.NaiveBayes;
+import weka.core.Instance;
 import weka.core.Instances;
+import weka.core.SerializationHelper;
 import weka.core.converters.ConverterUtils;
+import weka.filters.Filter;
+import weka.filters.unsupervised.attribute.NominalToBinary;
 
 /**
  *
@@ -216,7 +220,7 @@ public class MainWindow extends javax.swing.JFrame {
                     File file = this.filechooser.getSelectedFile();
                     this.isiStatus.setText("Membuka: " + file.getName() + ".\n");
                     this.data = ConverterUtils.DataSource.read(file.getAbsolutePath());
-                    this.data.setClassIndex(this.data.attribute("class").index());
+                    this.data.setClassIndex(this.data.attribute("LabelSport").index());
                     this.instancesValue.setText(String.valueOf(this.data.numInstances()));
                     this.attributesValue.setText(String.valueOf(this.data.numAttributes()));
                     this.relationValue.setText(String.valueOf(this.data.relationName()));
@@ -242,15 +246,48 @@ public class MainWindow extends javax.swing.JFrame {
             if (selectClassifierBox.getSelectedIndex() == 0) {
                 // FFNN 
                 Classifier fn = new FFNN();
-                
+                Classifier model=null;
                 //kalau mau rubah nilai hidden dan jumlah neuron lakukan disini
                 //fn.setHiddenLayer(1);
                 //fn.setNeuronNum(5);
                 try {
+                    
                     fn.buildClassifier(this.data);
-                } catch (Exception ex) {
-                    Logger.getLogger(MainWindow.class.getName()).log(Level.SEVERE, null, ex);
-                }
+                    model =fn;
+                    Instances ueval = this.data;
+                    Filter filter = new NominalToBinary();
+        //filter.setInputFormat(filteredData);
+        try {
+            filter.setInputFormat(ueval);
+            
+            for (Instance i1 : ueval) {
+                filter.input(i1);
+            }
+            
+            filter.batchFinished();
+        } catch (Exception ex) {
+            Logger.getLogger(NBTubes.class.getName()).log(Level.SEVERE, null, ex);
+        }
+                    Evaluation eval = new Evaluation(ueval);
+                    eval.evaluateModel(model, ueval);
+                    System.out.println(eval.toSummaryString());
+                    try {
+						SerializationHelper.write("savenih.nfd", model);
+						System.out.println("Model berhasil diciptakan");
+					} catch (Exception ex) {
+						System.out.println("Model gagal diciptakan");
+					}
+                    JFileChooser file = new JFileChooser();
+                    int open = file.showOpenDialog(file);
+                    File x = file.getSelectedFile();
+                    try {
+                        model  = (Classifier) SerializationHelper.read(x.getPath());
+                    } catch (Exception ex) {
+                        System.out.println("File model tidak dapat terbaca");
+                    }
+                    } catch (Exception ex) {
+                        Logger.getLogger(MainWindow.class.getName()).log(Level.SEVERE, null, ex);
+                    }
 
             } else if (selectClassifierBox.getSelectedIndex() == 1) {
                 try {
