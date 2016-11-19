@@ -61,7 +61,7 @@ public class NBTubes extends AbstractClassifier implements Serializable {
         header_Instances = data;
         
         //kasih filter
-        Filter f = new NumericToNominal();
+        Filter f = new Normalize();
         try {
             f.setInputFormat(data);
             
@@ -77,6 +77,28 @@ public class NBTubes extends AbstractClassifier implements Serializable {
         dataset = f.getOutputFormat();
         
         Instance p = null;
+
+        while ((p = f.output()) != null) {
+            dataset.add(p);
+        }
+        
+        f = new NumericToNominal();
+        try {
+            f.setInputFormat(dataset);
+            
+            for (Instance i1 : dataset) {
+                f.input(i1);
+            }
+            
+            f.batchFinished();
+        } catch (Exception ex) {
+            Logger.getLogger(NBTubes.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        
+        dataset = null;
+        dataset = f.getOutputFormat();
+        
+        p = null;
 
         while ((p = f.output()) != null) {
             dataset.add(p);
@@ -221,8 +243,27 @@ public class NBTubes extends AbstractClassifier implements Serializable {
     public double[] distributionForInstance(Instance instance) throws Exception {
         //Fungsi ini menentukan probabilitas setiap kelas instance untuk instance 
         //yang ada di parameter fungsi
+        //System.out.println(instance.toString());
         
+        System.out.println(instance.attribute(0).isNominal());
+        System.out.println(instance.attribute(0).isNumeric());
+                
         //kasih filter
+        /*
+        Filter f = new Normalize();
+        
+        f.setInputFormat(header_Instances);
+        
+        f.input(instance);
+        
+        f.batchFinished();
+        
+        Instances temp;
+        temp = f.getOutputFormat();
+        temp.add(f.output());
+        */
+        //System.out.println("temp = " + temp.toString());
+        
         Filter f = new NumericToNominal();
         
         f.setInputFormat(header_Instances);
@@ -233,8 +274,18 @@ public class NBTubes extends AbstractClassifier implements Serializable {
         
         instance = f.output();
         
-        //System.out.println(instance.toString());
+        System.out.println("baru = " + instance.toString());
         
+        
+        /*
+        Enumeration n;
+        n = dataset.attribute(1).enumerateValues();
+        
+        
+        while (n.hasMoreElements()) {
+            System.out.println(n.nextElement() +  "   ");
+        }
+        */
         
         //Classify~
         double[] a = new double[infoClassifier.get(0).get(0).size()];
@@ -252,15 +303,27 @@ public class NBTubes extends AbstractClassifier implements Serializable {
             k = 0;
             while (j < infoClassifier.size()) {
                 
-                if (instance.stringValue(k).contains(".0")) {
-                    //System.out.println("shit yes");
-                    x = dataset.attribute(j).indexOfValue(String.valueOf((int)instance.value(k)));
+                if (j == classIdx) {
+                    k++;
+                }
+                
+                //System.out.println(dataset.attribute(j).isNominal());
+                //System.out.println(dataset.attribute(j).isNumeric());
+                
+                /*
+                if (instance.value(k) % 1 == 0) {
+                    System.out.println("shit yes");
+                    //x = dataset.attribute(j).indexOfValue(String.valueOf((int)instance.value(k)));
+                    x = dataset.attribute(j).indexOfValue(instance.stringValue(k) + ".0");
                 } else {
-                    //System.out.println("thank god no");
+                    System.out.println("thank god no");
                     x = dataset.attribute(j).indexOfValue(instance.stringValue(k));
                 }
-                //System.out.println(j);
-                //System.out.println(dataset.attribute(2).indexOfValue("5.2"));
+                */
+
+                x = dataset.attribute(k).indexOfValue(instance.stringValue(k));
+                //System.out.println("k = " + k);
+                //System.out.println("indeks = " + dataset.attribute(k).indexOfValue(instance.stringValue(k)));
                 //System.out.print("prob kelas " + i + " given value " + instance.stringValue(k) + "(indeks ke-" + x + ") pada atribut ke " + j + " = " + " ");
                 //System.out.println(dataClassifier.get(j).get(x).get(i) + "  " + infoClassifier.get(j).get(x).get(i));
                 
@@ -268,9 +331,6 @@ public class NBTubes extends AbstractClassifier implements Serializable {
                 
                 //dataset.attribute(j).indexOfValue(String.valueOf((int)p.value(k)));
                 
-                if (j == classIdx) {
-                    k++;
-                }
                     
                 k++;
                 j++;
