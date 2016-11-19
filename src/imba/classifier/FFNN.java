@@ -47,10 +47,10 @@ public class FFNN extends AbstractClassifier implements Serializable {
             
     public FFNN() {
         //set variable ke nilai default masing-masing
-        this.nHidden = 1;
-        this.nNeuron = 10;
-        this.learningRate = 1;
-        this.nEpoch = 1000;
+        this.nHidden = 0;
+        this.nNeuron = 0;
+        this.learningRate = 0.3;
+        this.nEpoch = 5;
     } 
     
         @Override
@@ -61,7 +61,12 @@ public class FFNN extends AbstractClassifier implements Serializable {
         
         generateRandomWeight();
 
-        
+        System.out.println(nNeuron + "sesudahhhhhhhhhhhhhhhhhhhhhhhhh2222222222222222222222222222222222222");
+        for (int a = 1; a <= nNeuron; a++) {
+            for (int b = 1; b <= nOutput; b++) {
+                System.out.println("drctasfyugxbwhcudjkwndc" + a + " " + b + " " + Weight2[a][b]);
+            }
+        }
         
         //cek kelas, bisa di-handle atau tidak
         getCapabilities().testWithFail(data);
@@ -101,15 +106,17 @@ public class FFNN extends AbstractClassifier implements Serializable {
         
         hiddens = new Double[nData+1][nNeuron+1];
         outputs = new Double[nData+1][nOutput+1];
-        for (int x = 1; x <= nEpoch; x++) {
+        for (int x = 1; x <= nEpoch; x++) {//iterasi utama
+            //olah
             for (int i = 1; i <= nData; i++) {
                 feedForward(filteredData.instance(i-1));
                 for (int j = 1; j <= nNeuron; j++) {     
                     hiddens[i][j] = hidden[j];
 
                 }
-                for (int j = 1; j <= nOutput; j++) {     
-                    outputs[i][j] = output[j]; 
+                for (int y = 1; y <= nOutput; y++) {     
+                    outputs[i][y] = output[y];
+                    System.out.println("output " + output[y]);
                 }
                 if (nHidden == 0) {
                     updateWeight(filteredData.instance(i-1), target[i], outputs[i]);
@@ -132,18 +139,27 @@ public class FFNN extends AbstractClassifier implements Serializable {
                 }
             }*/
         }
- 
-        System.out.println("sesudahhhhhhhhhhhhhhhhhhhhhhhhh1111111111111111111111111111111111");
-        for (int a = 1; a <= nAttribute; a++) {
-            for (int b = 1; b <= nNeuron; b++) {
-                System.out.println(a + " " + b + " " + Weight1[a][b]);
-            }
-        }
         
-        System.out.println("sesudahhhhhhhhhhhhhhhhhhhhhhhhh2222222222222222222222222222222222222");
-        for (int a = 1; a <= nNeuron; a++) {
-            for (int b = 1; b <= nOutput; b++) {
-                System.out.println(a + " " + b + " " + Weight2[a][b]);
+        if ( nHidden == 0) {
+            System.out.println("sesudahhhhhhhhhhhhhhhhhhhhhhhhh1111111111111111111111111111111111");
+            for (int a = 1; a <= nAttribute; a++) {
+                for (int b = 1; b <= nOutput; b++) {
+                    System.out.println(a + " " + b + " " + Weight1[a][b]);
+                }
+            }
+        } else if (nHidden == 1) {
+            System.out.println("sesudahhhhhhhhhhhhhhhhhhhhhhhhh1111111111111111111111111111111111");
+            for (int a = 1; a <= nAttribute; a++) {
+                for (int b = 1; b <= nNeuron; b++) {
+                    System.out.println(a + " " + b + " " + Weight1[a][b]);
+                }
+            }
+
+            System.out.println("sesudahhhhhhhhhhhhhhhhhhhhhhhhh2222222222222222222222222222222222222");
+            for (int a = 1; a <= nNeuron; a++) {
+                for (int b = 1; b <= nOutput; b++) {
+                    System.out.println("uvufvhbsiubvuihbg" + a + " " + b + " " + Weight2[a][b]);
+                }
             }
         }
         
@@ -197,6 +213,7 @@ public class FFNN extends AbstractClassifier implements Serializable {
                     result = result + (hidden[l] * Weight2[l][k]);
                 }
                 output[k] = activationFunction(result);
+                System.out.println("output forward " + output[k]);
             }
         } else if (nHidden == 0) {
             //olah output
@@ -223,6 +240,7 @@ public class FFNN extends AbstractClassifier implements Serializable {
     private void generateRandomWeight () { 
        if (nHidden == 0) {
            Weight1 = new Double[nAttribute+1][nOutput+1];
+           Weight2 = new Double[nNeuron+1][nOutput+1];
            //System.out.println("nAtt" + nAttribute);
            //System.out.println("nOut" + nOutput);
            for (int i = 1; i <= nAttribute; i++) {
@@ -309,6 +327,7 @@ public class FFNN extends AbstractClassifier implements Serializable {
         //Error di output layer
         for (int i = 1; i <= count; i++) {
             errorOutput[i] = out[i] * (1 - out[i]) * (tar[i] - out[i]);
+            System.out.println("err, output " + errorOutput[i] + " " + out[i]);
         }
         
         //Error di hidden layer
@@ -316,16 +335,18 @@ public class FFNN extends AbstractClassifier implements Serializable {
             Double sigma = 0.0;
             for (int j = 1; j <= count; j++) {
                 sigma = sigma + (Weight2[i][j] * errorOutput[j]);
+                System.out.println("hidden weight, error " + Weight2[i][j] + " " + errorOutput[j]);
             }
             //System.out.println(i);
             errorHidden[i] = hid[i] * (1 - hid[i]) * sigma;
+            System.out.println("hid, sigma " + hid[i] + " " + sigma);
         }
         
         //Update weight di hidden
         for (int i = 1; i <= nNeuron; i++) {
             for (int j = 1; j <= (nAttribute); j++) {
                 Weight1[j][i] = Weight1[j][i] + (learningRate * errorHidden[i] * inst.value(j-1));
-                System.out.println("error, inst.val " + errorHidden[i] + ", " +  inst.value(j-1));
+                //System.out.println("error, inst.val " + errorHidden[i] + ", " +  inst.value(j-1));
             }
         }
         
