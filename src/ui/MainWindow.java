@@ -220,7 +220,7 @@ public class MainWindow extends javax.swing.JFrame {
                     File file = this.filechooser.getSelectedFile();
                     this.isiStatus.setText("Membuka: " + file.getName() + ".\n");
                     this.data = ConverterUtils.DataSource.read(file.getAbsolutePath());
-                    this.data.setClassIndex(this.data.attribute("LabelSport").index());
+                    this.data.setClassIndex(this.data.attribute("class").index());
                     this.instancesValue.setText(String.valueOf(this.data.numInstances()));
                     this.attributesValue.setText(String.valueOf(this.data.numAttributes()));
                     this.relationValue.setText(String.valueOf(this.data.relationName()));
@@ -291,22 +291,22 @@ public class MainWindow extends javax.swing.JFrame {
 
             } else if (selectClassifierBox.getSelectedIndex() == 1) {
                 try {
-                    //Evaluation evaluation = new Evaluation(this.data);
+                    Evaluation evaluation = new Evaluation(this.data);
                     Evaluation evaluation1 = new Evaluation(this.data);
                     // Naive Bayes
-                    /*NBTubes nb = new NBTubes();
-                    nb.buildClassifier(this.data);*/
+                    NBTubes nb = new NBTubes();
+                    nb.buildClassifier(this.data);
                     // Cuman buat perbandingan
                     NaiveBayes ntest = new NaiveBayes();
                     ntest.buildClassifier(this.data);
 
                     // Evaluate
-                    /*evaluation.crossValidateModel(nb, this.data, 10, new Random(1));
+                    evaluation.crossValidateModel(nb, this.data, 10, new Random(1));
                     this.resultTextArea.setText(evaluation.toSummaryString("\nPunya Sendiri : \n== Summary ==\n",false));
                     this.resultTextArea.append(evaluation.toClassDetailsString("\n== Detailed Accuracy By Class ==\n"));
                     this.resultTextArea.append(evaluation.toMatrixString("\n== Confusion Matrix ==\n"));
                     this.isiStatus.setText("Running Cross Validation Completed");
-                    */
+                    
                     evaluation1.crossValidateModel(ntest, this.data, 10, new Random(1));
                     this.resultTextArea.append(evaluation1.toSummaryString("\nDari WEKA : \n== Summary ==\n",false));
                     this.resultTextArea.append(evaluation1.toClassDetailsString("\n== Detailed Accuracy By Class ==\n"));
