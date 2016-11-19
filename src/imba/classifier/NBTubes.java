@@ -33,6 +33,8 @@ public class NBTubes extends AbstractClassifier implements Serializable {
     public ArrayList<ArrayList<ArrayList<Integer>>> dataClassifier;
     public ArrayList<ArrayList<ArrayList<Double>>> infoClassifier;
     
+    public ArrayList<ArrayList<Boolean>> validAttribute;
+    
     public Instances dataset;
     protected Instances header_Instances;
 	
@@ -52,6 +54,7 @@ public class NBTubes extends AbstractClassifier implements Serializable {
     public void buildClassifier(Instances data) {
         dataClassifier = new ArrayList<>();
         infoClassifier = new ArrayList<>();
+        validAttribute = new ArrayList<>();
         dataset = null;
         sumClass = null;
         dataSize = 0;
@@ -78,8 +81,9 @@ public class NBTubes extends AbstractClassifier implements Serializable {
             dataset.add(p);
         }
         
-        int x, y, z;
+        //int x, y, z;
         
+        /*
         Enumeration n;
         for (x = 0; x < dataset.numAttributes(); x++) {
             n = dataset.attribute(x).enumerateValues();
@@ -88,6 +92,7 @@ public class NBTubes extends AbstractClassifier implements Serializable {
             }
             System.out.println();
         }
+        */
         
         //building data structure
         int i, j, k, l, m;
@@ -158,17 +163,9 @@ public class NBTubes extends AbstractClassifier implements Serializable {
                         m = k;
                     }
                     
-                    dataClassifier.
-                            get(m).
-                            get((int)dataset.
-                            get(i).value(k)).
-                            set(
+                    dataClassifier.get(m).get((int)dataset.get(i).value(k)).set(
                         (int)dataset.get(i).value(classIdx),
-                            dataClassifier.get(m).
-                                    get((int)dataset.
-                                            get(i).value(k)).
-                                    get((int)dataset.
-                                            get(i).value(classIdx))+1);
+                            dataClassifier.get(m).get((int)dataset.get(i).value(k)).get((int)dataset.get(i).value(classIdx))+1);
                     
                     if (m == 0) {
                         sumClass[(int)dataset.get(i).value(classIdx)]++;
@@ -201,6 +198,22 @@ public class NBTubes extends AbstractClassifier implements Serializable {
             
             i++;
         }
+        
+        /*
+        //liat apakah ada nilai di tiap atribut
+        //yang merepresentasikan lebih dari 80% data
+        i = 0;
+        while (i < dataClassifier.size()) {
+            j = 0;
+            while (j < dataClassifier.get(i).size()) {
+                
+                
+                j++;
+            }
+            
+            i++;
+        }
+*/
     }
     
     @Override
@@ -219,6 +232,8 @@ public class NBTubes extends AbstractClassifier implements Serializable {
         
         instance = f.output();
         
+        System.out.println(instance.toString());
+        
         
         //Classify~
         double[] a = new double[infoClassifier.get(0).get(0).size()];
@@ -226,6 +241,7 @@ public class NBTubes extends AbstractClassifier implements Serializable {
         int i = 0;
         int j;
         int k;
+        int x;
         while (i < (a.length)) {
             a[i] = (double) sumClass[i] / dataSize;
             
@@ -234,9 +250,17 @@ public class NBTubes extends AbstractClassifier implements Serializable {
             j = 0;
             k = 0;
             while (j < infoClassifier.size()) {
-                a[i] *= infoClassifier.get(j).get((int)instance.value(k)).get(i);
                 
-                System.out.println("prob kelas " + i + " given " + (int)instance.value(k) + dataClassifier.get(j).get((int)instance.value(k)).get(i) + "  " + infoClassifier.get(j).get((int)instance.value(k)).get(i));
+                if (instance.stringValue(k).contains(".0")) {
+                    x = dataset.attribute(j).indexOfValue(String.valueOf((int)instance.value(k)));
+                } else {
+                    x = dataset.attribute(j).indexOfValue(instance.stringValue(k));
+                }
+                
+                a[i] *= infoClassifier.get(j).get(x).get(i);
+                
+                System.out.println("prob kelas " + i + " given value " + instance.stringValue(k) + "(indeks ke-" + x + ") pada atribut ke " + j + " = " + " " + dataClassifier.get(j).get(x).get(i) + "  " + infoClassifier.get(j).get(x).get(i));
+                //dataset.attribute(j).indexOfValue(String.valueOf((int)p.value(k)));
                 
                 if (j == classIdx) {
                     k++;
@@ -247,6 +271,7 @@ public class NBTubes extends AbstractClassifier implements Serializable {
             }
             
             System.out.println("prob kelas " + i + " final = " + a[i]);
+            System.out.println();
             
             i++;
         }
