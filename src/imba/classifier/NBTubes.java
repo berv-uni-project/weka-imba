@@ -5,50 +5,40 @@
  */
 package imba.classifier;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import weka.classifiers.AbstractClassifier;
 import weka.classifiers.Classifier;
-import weka.core.Attribute;
 import weka.core.Instances;
 import weka.core.Instance;
 import weka.core.Capabilities;
 import weka.core.Capabilities.Capability;
-import weka.core.Utils;
-import weka.estimators.DiscreteEstimator;
-import weka.estimators.Estimator;
 import weka.filters.Filter;
-import weka.filters.supervised.attribute.Discretize;
+import weka.filters.unsupervised.attribute.Discretize;
 import weka.filters.unsupervised.attribute.NumericToNominal;
+import weka.filters.unsupervised.attribute.Normalize;
 
 /**
  *
  * @author absol
  */
-public class NBTubes extends AbstractClassifier {
+public class NBTubes extends AbstractClassifier implements Serializable {
     
-    /** for serialization */
-  static final long serialVersionUID = 5995231201785697655L;
-    
-    public ArrayList<ArrayList<ArrayList<Integer>>> dataClassifier;
-    public ArrayList<ArrayList<ArrayList<Double>>> infoClassifier;
-    protected Instances dataset;
-    protected int numClasses;
     //Urutan: 1. Atribut, 2. Domain, 3. Kelas
     //Kelas dan domain beserta jumlah instance nya dijumlah dari setiap data
     //domain dari sebuah atribut
+    public ArrayList<ArrayList<ArrayList<Integer>>> dataClassifier;
+    public ArrayList<ArrayList<ArrayList<Double>>> infoClassifier;
+    
+    public Instances dataset;
+    protected Instances header_Instances;
 	
     public int[] sumClass;
     public int dataSize;
     public int classIdx;
-    
-     /** The attribute estimators. */
-    protected Estimator[][] m_Distributions;
-
-    /** The class estimator. */
-    protected Estimator m_ClassDistribution;
     
     public NBTubes() {
         dataClassifier = new ArrayList<>();
@@ -59,205 +49,212 @@ public class NBTubes extends AbstractClassifier {
     }
 	
     @Override
-    public void buildClassifier(Instances data) throws Exception {
+    public void buildClassifier(Instances data) {
+        dataClassifier = new ArrayList<>();
+        infoClassifier = new ArrayList<>();
+        dataset = null;
+        sumClass = null;
+        dataSize = 0;
         
-        getCapabilities().testWithFail(data);
-        
-        // hapus data dengan kelas yang hilang
-        data = new Instances(data);
-        data.deleteWithMissingClass();
-        
-        // copy data
-        dataset = new Instances(data);
-		
-        
-        int i, j, k, l;
-        int sumVal = 0;
-        
-        int numAttr = dataset.numAttributes();
-/*        
-        NumericToNominal filter = new NumericToNominal();
-        filter.setInputFormat(this.dataset);
-        this.dataset = Filter.useFilter(this.dataset, filter);
-*/        
-        // discretize
-        Discretize discret = new Discretize();
-        discret.setInputFormat(dataset);
-        dataset = Filter.useFilter(dataset,discret);
-        
-        // Reserve space for the distributions
-        m_Distributions = new Estimator[dataset.numAttributes() - 1][dataset.numClasses()];
-        m_ClassDistribution = new DiscreteEstimator(dataset.numClasses(), true);
-        int attIndex = 0;
-        Enumeration<Attribute> enu = dataset.enumerateAttributes();
-        while (enu.hasMoreElements()) {
-            Attribute attribute = enu.nextElement();
-            for (int m = 0; m < dataset.numClasses(); m++) {
-                m_Distributions[attIndex][m] = new DiscreteEstimator(attribute.numValues(), true);
+        //kasih filter
+        Filter f = new NumericToNominal();
+        try {
+            f.setInputFormat(data);
+            
+            for (Instance i1 : data) {
+                f.input(i1);
             }
-            attIndex++;
+            
+            f.batchFinished();
+        } catch (Exception ex) {
+            Logger.getLogger(NBTubes.class.getName()).log(Level.SEVERE, null, ex);
         }
         
-        // Compute counts
-        Enumeration<Instance> enumInsts = dataset.enumerateInstances();
-        while (enumInsts.hasMoreElements()) {
-          Instance instance = enumInsts.nextElement();
-          updateClassifier(instance);
-        }
+        dataset = f.getOutputFormat();
+        
+        Instance p = null;
 
-        // Save space
-        dataset = new Instances(dataset, 0);
+        while ((p = f.output()) != null) {
+            dataset.add(p);
+        }
         
-        /*
-        int a = 0;
-        i = a;
-        while (a < numAttr) {
-            if (a != classIdx) {
-                //add new attribute, blsm ada domainnya
+        int x, y, z;
+        
+        Enumeration n;
+        for (x = 0; x < dataset.numAttributes(); x++) {
+            n = dataset.attribute(x).enumerateValues();
+            for (y = 0; y < dataset.attribute(x).numValues(); y++) {
+                System.out.print(n.nextElement() + "   ");
+            }
+            System.out.println();
+        }
+        
+        //building data structure
+        int i, j, k, l, m;
+        int sumVal;
+        
+        int numAttr = data.numAttributes(); //ini beserta kelasnya, jadi atribut + 1
+        
+        classIdx = data.classIndex();
+        
+        System.out.println(classIdx);
+        
+        dataSize = data.size();
+        
+        //isi data dan info classifier dengan array kosong
+        i = 0;
+        j = i;
+        m = j;
+        while (j < numAttr) {
+            if (i == classIdx) {
+                i++;
+            } else {
                 dataClassifier.add(new ArrayList<>());
                 infoClassifier.add(new ArrayList<>());
-            
-                j = 0;
-                while (j < filteredData.get(0).attribute(i).numValues()) {
-                    //add new domain pada suatu atribut, blm ada perbedaan kelas
-                    dataClassifier.get(i).add(new ArrayList<>());
-                    infoClassifier.get(i).add(new ArrayList<>());
-
-                    k = 0;
-                    while (k < filteredData.get(0).attribute(classIdx).numValues()) {
-                        //add new kelas di dalam atribut, domain spesifik                    
-                        dataClassifier.get(i).get(j).add(0);
-                        infoClassifier.get(i).get(j).add(0.0);
-                        k++;
-                    }   
-                    j++;
-                }
-            } else {
-                i--;
-            }
-               
-            a++;
-            i++;
-        }
-        
-        //reading from instances
-        i = 0;
-        while (i < filteredData.size()) {
-            a = 0;
-            j = a;
-            while (a < numAttr) {
-                if  (a != classIdx) {
-                    dataClassifier.get(j).
-                            get((int) filteredData.
-                                        get(i).
-                                            value(j)).
-                            set((int) filteredData.get(i).value(classIdx), 
-                                    dataClassifier.get(j).get(
-                                            (int) filteredData.get(i).value(j)).get(
-                                                    (int) filteredData.get(i).value(classIdx))+1);
-
-                    if (j == 0) {
-                        sumClass[(int) filteredData.
-                                get(i).
-                                value(classIdx)]++;
-                    }
-                }
-                else {
-                    j--;
+                
+                if (j < i) {
+                    m = j - 1;
+                } else {
+                    m = j;
                 }
                 
+                k = 0;
+                while (k < dataset.attribute(j).numValues()) {
+                    dataClassifier.get(m).add(new ArrayList<>());
+                    infoClassifier.get(m).add(new ArrayList<>());                
+                    
+                    l = 0;
+                    while (l < dataset.attribute(classIdx).numValues()) {
+                        dataClassifier.get(m).get(k).add(0);
+                        infoClassifier.get(m).get(k).add(0.0);
+                        
+                        l++;
+                    }
+                    
+                    k++;
+                }
+            }
+            
+            i++;
+            j++;
+        }
+        
+        //isi data classifier dari dataset
+        sumClass = new int[data.numClasses()];
+        
+        i = 0;
+        m = 0;
+        while (i < dataset.size()) {
+            j = 0;
+            k = j;
+            m = k;
+            while (k < dataset.numAttributes()) {
+                if (j == classIdx) {
+                    j++;
+                } else {
+                    if (k < j) {
+                        m = k - 1;
+                    } else {
+                        m = k;
+                    }
+                    
+                    dataClassifier.
+                            get(m).
+                            get((int)dataset.
+                            get(i).value(k)).
+                            set(
+                        (int)dataset.get(i).value(classIdx),
+                            dataClassifier.get(m).
+                                    get((int)dataset.
+                                            get(i).value(k)).
+                                    get((int)dataset.
+                                            get(i).value(classIdx))+1);
+                    
+                    if (m == 0) {
+                        sumClass[(int)dataset.get(i).value(classIdx)]++;
+                    }
+                    
+                }
+                
+                k++;
                 j++;
-                a++;
             }
             
             i++;
         }
         
-        //getting double values, jumlahNilaiXdiAtrY/jumlahAtrYDiKelasZ
+        //proses double values
         i = 0;
-        while (i < dataClassifier.size())
-        {
+        while (i < dataClassifier.size()) {
             j = 0;
             while (j < dataClassifier.get(i).size()) {
                 k = 0;
                 while (k < dataClassifier.get(i).get(j).size()) {
-                    //dapetin sumVal(j) utk kelas(k)
-                    sumVal = dataClassifier.get(i).get(j).get(k);                    
-
                     infoClassifier.get(i).
-                            get(j).
-                            set(k, (double)sumVal/sumClass[k]);
+                            get(j).set(k, (double)dataClassifier.get(i).get(j).get(k)/sumClass[k]);
+                    
                     k++;
                 }
+                
                 j++;
             }
+            
             i++;
-        } */
-    }
-    
-     /**
-   * Updates the classifier with the given instance.
-   * 
-   * @param instance the new training instance to include in the model
-   * @exception Exception if the instance could not be incorporated in the
-   *              model.
-   */
-  public void updateClassifier(Instance instance) throws Exception {
-
-    if (!instance.classIsMissing()) {
-      Enumeration<Attribute> enumAtts = dataset.enumerateAttributes();
-      int attIndex = 0;
-      while (enumAtts.hasMoreElements()) {
-        Attribute attribute = enumAtts.nextElement();
-        if (!instance.isMissing(attribute)) {
-          m_Distributions[attIndex][(int) instance.classValue()].addValue(
-            instance.value(attribute), instance.weight());
         }
-        attIndex++;
-      }
-      m_ClassDistribution.addValue(instance.classValue(), instance.weight());
     }
-  }
     
     @Override
     public double[] distributionForInstance(Instance instance) throws Exception {
-        double[] probs = new double[numClasses];
-        for (int j = 0; j < numClasses; j++) {
-          probs[j] = m_ClassDistribution.getProbability(j);
-        }
-        Enumeration<Attribute> enumAtts = instance.enumerateAttributes();
-        int attIndex = 0;
-        while (enumAtts.hasMoreElements()) {
-            Attribute attribute = enumAtts.nextElement();
-            if (!instance.isMissing(attribute)) {
-                double temp, max = 0;
-                for (int j = 0; j < numClasses; j++) {
-                    temp = Math.max(1e-75, Math.pow(m_Distributions[attIndex][j]
-                      .getProbability(instance.value(attribute)),
-                      dataset.attribute(attIndex).weight()));
-                    probs[j] *= temp;
-                    if (probs[j] > max) {
-                        max = probs[j];
-                    }
-                    if (Double.isNaN(probs[j])) {
-                        throw new Exception("NaN returned from estimator for attribute "
-                        + attribute.name() + ":\n"
-                        + m_Distributions[attIndex][j].toString());
-                    }
+        //Fungsi ini menentukan probabilitas setiap kelas instance untuk instance 
+        //yang ada di parameter fungsi
+        
+        //kasih filter
+        Filter f = new NumericToNominal();
+        
+        f.setInputFormat(dataset);
+        
+        f.input(instance);
+        
+        f.batchFinished();
+        
+        instance = f.output();
+        
+        
+        //Classify~
+        double[] a = new double[infoClassifier.get(0).get(0).size()];
+                
+        int i = 0;
+        int j;
+        int k;
+        while (i < (a.length)) {
+            a[i] = (double) sumClass[i] / dataSize;
+            
+            System.out.println("prob kelas " + i + " = " + a[i]);
+            
+            j = 0;
+            k = 0;
+            while (j < infoClassifier.size()) {
+                a[i] *= infoClassifier.get(j).get((int)instance.value(k)).get(i);
+                
+                System.out.println("prob kelas " + i + " given " + (int)instance.value(k) + dataClassifier.get(j).get((int)instance.value(k)).get(i) + "  " + infoClassifier.get(j).get((int)instance.value(k)).get(i));
+                
+                if (j == classIdx) {
+                    k++;
                 }
-                if ((max > 0) && (max < 1e-75)) { // Danger of probability underflow
-                  for (int j = 0; j < numClasses; j++) {
-                    probs[j] *= 1e75;
-                  }
-                }
+                    
+                k++;
+                j++;
             }
-            attIndex++;
+            
+            System.out.println("prob kelas " + i + " final = " + a[i]);
+            
+            i++;
         }
-
-        return probs;
+        
+        //System.out.println();
+        
+        return a;
     }
-    
-    
     
     @Override
     public double classifyInstance(Instance instance) throws Exception {
@@ -303,17 +300,4 @@ public class NBTubes extends AbstractClassifier {
         
         return c;
     }
-<<<<<<< HEAD
 }
-=======
-    
-    /**
-   * Main method for testing this class.
-   * 
-   * @param argv the options
-   */
-  public static void main(String[] argv) {
-    runClassifier(new NBTubes(), argv);
-  }
-}
->>>>>>> c6ec05658ab7ddce96a7dc2f2c5dab93e95f4cdc
