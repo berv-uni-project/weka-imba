@@ -432,7 +432,3 @@ public class NBTubes extends AbstractClassifier implements Serializable {
         return c;
     }
 }
-<<<<<<< HEAD
->>>>>>> 901e066... dikit rubah bayes, belum fix. dikit lagi
-=======
->>>>>>> b1cb844... salah eval karena ada kelas yg ga keitung

@@ -6,7 +6,6 @@
 package imba.classifier;
 
 import java.io.Serializable;
-import java.util.ArrayList;
 import java.util.Random;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -57,7 +56,7 @@ public class FFNN extends AbstractClassifier implements Serializable {
         this.nEpoch = 1;
     } 
     
-        @Override
+    @Override
     public void buildClassifier (Instances data) throws Exception {        
         nOutput = data.numClasses();
         nAttribute = data.numAttributes() - 1;

@@ -21,7 +21,7 @@ import weka.filters.unsupervised.attribute.Normalize;
  *
  * @author Bervianto Leo P
  */
-public class FFNN extends AbstractClassifier implements Serializable {
+public class FFNN1 extends AbstractClassifier implements Serializable {
     //input pengguna untuk pengaturan topologi
     private int nHidden; //ju
     private int nNeuron; 
@@ -41,7 +41,7 @@ public class FFNN extends AbstractClassifier implements Serializable {
     //Array of target
     private Double[][] target;
             
-    public FFNN() {
+    public FFNN1() {
         //set variable ke nilai default masing-masing
         this.nHidden = 0;
         this.nNeuron = 0;
