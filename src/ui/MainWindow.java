@@ -122,6 +122,11 @@ public class MainWindow extends javax.swing.JFrame {
 
         saveModelButton.setText("Save Model");
         saveModelButton.setEnabled(false);
+        saveModelButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                saveModelButtonActionPerformed(evt);
+            }
+        });
         mainPanel.add(saveModelButton);
 
         allPanel.add(mainPanel);
@@ -278,8 +283,11 @@ public class MainWindow extends javax.swing.JFrame {
                     // Minta input nama kelas
                     JFrame frame = new JFrame("Class Name");
                     String className = JOptionPane.showInputDialog(frame, "Class Name");
-                    
-                    this.data.setClassIndex(this.data.attribute(className).index());
+                    if (className == null) {
+                        this.data.setClassIndex(this.data.attribute("class").index());
+                    } else {
+                        this.data.setClassIndex(this.data.attribute(className).index());
+                    }
                     this.instancesValue.setText(String.valueOf(this.data.numInstances()));
                     this.attributesValue.setText(String.valueOf(this.data.numAttributes()));
                     this.relationValue.setText(String.valueOf(this.data.relationName()));
@@ -398,7 +406,7 @@ public class MainWindow extends javax.swing.JFrame {
             if (returnVal == JFileChooser.APPROVE_OPTION) {
                 try {
                     File file = this.filechooser.getSelectedFile();
-                    this.isiStatus.setText("Load module: " + file.getName() + ".\n");
+                    this.isiStatus.setText("Load model: " + file.getName() + ".\n");
                     loadedModel = (Classifier) SerializationHelper.read(file.getAbsolutePath());
                     
                 } catch (Exception ex) {
@@ -409,6 +417,27 @@ public class MainWindow extends javax.swing.JFrame {
             }
         }
     }//GEN-LAST:event_loadModelButtonActionPerformed
+
+    private void saveModelButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_saveModelButtonActionPerformed
+        if (evt.getSource() == this.saveModelButton) {
+            this.filechooser.setAcceptAllFileFilterUsed(false);
+            this.filechooser.removeChoosableFileFilter(arffformat);
+            this.filechooser.setFileFilter(modelformat);
+            int returnVal = this.filechooser.showSaveDialog(MainWindow.this);
+
+            if (returnVal == JFileChooser.APPROVE_OPTION) {
+                try {
+                    File file = this.filechooser.getSelectedFile();
+                    SerializationHelper.write(file.getAbsolutePath(), this.loadedModel);
+                    this.isiStatus.setText("Save model completed.");
+                } catch (Exception ex) {
+                    Logger.getLogger(MainWindow.class.getName()).log(Level.SEVERE, null, ex);
+                }
+            } else {
+                this.isiStatus.setText("Save model canceled by user.\n");
+            }
+        }
+    }//GEN-LAST:event_saveModelButtonActionPerformed
 
     /**
      * @param args the command line arguments
