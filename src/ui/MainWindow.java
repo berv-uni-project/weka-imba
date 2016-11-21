@@ -338,7 +338,7 @@ public class MainWindow extends javax.swing.JFrame {
                         int jumlahNeuron = Integer.valueOf(this.neuronValue.getText());
                         int jumlahIterasi = Integer.valueOf(this.iterationValue.getText());
                         Classifier fn;
-                        if ( (learningRate > 0.0 && learningRate < 1.0) && (hiddenLayer >= 0) && (jumlahNeuron > 0) && (jumlahIterasi > 0)) {
+                        if ( (learningRate > 0.0 && learningRate < 1.0) && (hiddenLayer >= 0 && hiddenLayer <= 1) && (jumlahNeuron >= 0) && (jumlahIterasi > 0)) {
                             // Valid Input
                             fn = new FFNNTubes(learningRate,hiddenLayer,jumlahNeuron,jumlahIterasi);
                         } else {
