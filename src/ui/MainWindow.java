@@ -19,6 +19,7 @@ import javax.swing.plaf.metal.OceanTheme;
 import weka.classifiers.Classifier;
 import weka.classifiers.Evaluation;
 import weka.classifiers.bayes.NaiveBayes;
+import weka.classifiers.functions.MultilayerPerceptron;
 import weka.core.Instance;
 import weka.core.Instances;
 import weka.core.SerializationHelper;
@@ -453,12 +454,7 @@ public class MainWindow extends javax.swing.JFrame {
                     File file = this.filechooser.getSelectedFile();
                     this.statusValue.setText("Load model: " + file.getName() + ".\n");
                     this.loadedModel = (Classifier) SerializationHelper.read(file.getAbsolutePath());
-                    String nameClass = this.loadedModel.getClass().getCanonicalName();
-                    if (nameClass.equalsIgnoreCase("imba.weka.FFNNTubes")){
-                        
-                    } else if (nameClass.equalsIgnoreCase("imba.weka.NBTubes")) {
-                        
-                    }
+                    this.resultTextArea.setText(this.loadedModel.toString());
                     this.modelValue.setText("Model "+file.getName());
                     this.dataTestButton.setEnabled(true);
                     this.saveModelButton.setEnabled(true);
