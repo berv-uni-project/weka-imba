@@ -88,7 +88,7 @@ public class FFNNTubes extends AbstractClassifier implements Serializable{
             Weight1 = new double[nOutput][nAttribute+1];
             for (int i = 0; i < nOutput; i++) {
                 for (int j = 0; j <= nAttribute; j++) {
-                    Weight1[i][j] = randomInRange(-5, 5);
+                    Weight1[i][j] = randomInRange(-1, 1);
                 } 
             }
         } else {
@@ -96,13 +96,13 @@ public class FFNNTubes extends AbstractClassifier implements Serializable{
             Weight2 = new double[nOutput][nNeuron+1];
             for (int i = 0; i <= nNeuron; i++) {
                 for (int j = 0; j <= nAttribute; j++) {
-                    Weight1[i][j] = randomInRange(-5, 5);
+                    Weight1[i][j] = randomInRange(-1, 1);
                 } 
             }
             
             for (int i = 0; i < nOutput; i++) {
                 for (int j = 0; j <= nNeuron; j++) {
-                    Weight2[i][j] = randomInRange(-5, 5);
+                    Weight2[i][j] = randomInRange(-1, 1);
                 } 
             }
         }
@@ -241,6 +241,7 @@ public class FFNNTubes extends AbstractClassifier implements Serializable{
         }
         
         int z = 0;
+        double valMSE = 0.0;
         while ((z <= nEpoch) && (accuracy < 0.99)) {
             for (int j = 0; j < nData; j++) {
                 feedForward(filteredData.get(j));
@@ -253,7 +254,9 @@ public class FFNNTubes extends AbstractClassifier implements Serializable{
             }
             
             countError(filteredData);
+            valMSE = countMSE(filteredData);
             System.out.println("ACCURACY " + z + " : " + accuracy);
+            System.out.println("MSE " + z + " : " + valMSE);
             z++;
         }
     }
@@ -288,5 +291,26 @@ public class FFNNTubes extends AbstractClassifier implements Serializable{
             }
         }
         accuracy = ((double) nData - (double) error)/ (double)nData;
+    }
+    
+    private double countMSE (Instances a) throws Exception {
+        double[] mseTable = new double[nData];
+        double result = 0.0;
+        
+        for (int i = 0; i < nData; i++) {
+            double out = classifyInstance(a.get(i));
+            double tar = a.get(i).classValue();
+            double selisih = tar - out;
+            mseTable[i] = Math.pow(selisih, 2.0) / (double) nData;
+        }
+        
+        double sum = 0.0;
+        for (int i = 0; i < nData; i++) {
+            sum = sum + mseTable[i];
+        }
+        
+        result = sum / (double) nData;
+        
+        return result;
     }
 }
