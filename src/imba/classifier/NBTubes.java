@@ -41,6 +41,8 @@ public class NBTubes extends AbstractClassifier implements Serializable {
     public int dataSize;
     public int classIdx;
     
+    public String filter;
+    
     public boolean wasNumeric;
     
     public NBTubes() {
@@ -48,6 +50,17 @@ public class NBTubes extends AbstractClassifier implements Serializable {
         infoClassifier = new ArrayList<>();
         dataset = null;
         sumClass = null;
+        filter = "NumericToNominal";
+        dataSize = 0;
+        wasNumeric = false;
+    }
+    
+    public NBTubes(String filterChoice) {
+        dataClassifier = new ArrayList<>();
+        infoClassifier = new ArrayList<>();
+        dataset = null;
+        sumClass = null;
+        filter = filterChoice;
         dataSize = 0;
         wasNumeric = false;
     }
@@ -106,7 +119,13 @@ public class NBTubes extends AbstractClassifier implements Serializable {
             }
         }
         
-        f = new NumericToNominal();
+        //f = new NumericToNominal();
+        if (filter.equals("Discretize")) {
+            f = new Discretize();
+        } else {
+            f = new NumericToNominal();
+        }
+        
         try {
             if (wasNumeric) {
                 f.setInputFormat(dataset);
@@ -256,6 +275,8 @@ public class NBTubes extends AbstractClassifier implements Serializable {
         double t, prev;
         Enumeration n;
         boolean big;
+        String val;
+        String[] valMinMax;
         
         if (wasNumeric) {
             
@@ -280,6 +301,7 @@ public class NBTubes extends AbstractClassifier implements Serializable {
                 temp.add(p);
             }
         }
+        
         f = new NumericToNominal();
             
         if (wasNumeric) {
@@ -332,45 +354,92 @@ public class NBTubes extends AbstractClassifier implements Serializable {
                 }
                 
                 if (wasNumeric) {
-                    big = false;
-                    l = 0;
-                    n = dataset.attribute(k).enumerateValues();
-                    
-                    t = 0;
-                    prev = 0;
-                    while (l < dataset.attribute(k).numValues() && big == false) {
-                        t = Double.valueOf(n.nextElement().toString());
-                        
-                        //System.out.println(prev + "   " + t);
-                        if (Double.valueOf(instance.stringValue(k)) <= t) {
-                            big = true;
-                        } else {
-                            prev = t;
+                    if (filter.equals("Discretize")) {
+                        l = 0;
+                        big = false;
+                        while (l < dataset.attribute(k).numValues() && big == false) {
+                            //parse
+                            val = String.valueOf(dataset.attribute(k).value(l));
+                            //System.out.println("k = " + k);
+                            //System.out.println("nilai = " + instance.stringValue(k));
+                            val = val.replaceAll("'", "");
+                            val = val.replaceAll("\\(", "");
+                            val = val.replaceAll("\\)", "");
+                            val = val.replaceAll("]", "");
+                            
+                            valMinMax = val.split("-");
+                            
+                            
+                            //cocokin
+                            
+                            
+                            if (valMinMax.length == 3) {
+                                if (valMinMax[1].equals("inf")) {
+                                    valMinMax[1] = "0.0";
+                                }
+                                //System.out.println("Min = " + valMinMax[1]);
+                                //System.out.println("Max = " + valMinMax[2]);
+                                if (Double.valueOf(instance.stringValue(k)) > Double.valueOf(valMinMax[1]) && Double.valueOf(instance.stringValue(k)) <= Double.valueOf(valMinMax[2])) {
+                                    big = true;
+                                }
+                            } else {
+                                if (valMinMax[1].equals("inf")) {
+                                    valMinMax[1] = "1.0";
+                                }
+                                //System.out.println("Min = " + valMinMax[0]);
+                                //System.out.println("Max = " + valMinMax[1]);
+                                if (Double.valueOf(instance.stringValue(k)) > Double.valueOf(valMinMax[0]) && Double.valueOf(instance.stringValue(k)) <= Double.valueOf(valMinMax[1])) {
+                                    big = true;
+                                }
+                            }
+                            l++;
                         }
                         
-                        l++;    
-                    }
-                    
-                    if (big == true && t != Double.valueOf(instance.stringValue(k))) {
-                        System.out.println(prev + "   " + Double.valueOf(instance.stringValue(k)) + "   " + t);
-                    }
-                    //x = l - 1;
-                    
-                    if (classIdx < 2) {
-                        c = 2;
+                        x = l - 1;
+                
+                        //System.out.println("x = " + x);
                     } else {
-                        c = 1;
-                    }
-                    
-                    if (big == true && l > c) {
-                        if ((Double.valueOf(instance.stringValue(k)) - prev) <= (t - Double.valueOf(instance.stringValue(k)))) {
-                            x = l - 2;
+                        big = false;
+                        l = 0;
+                        n = dataset.attribute(k).enumerateValues();
+
+                        t = 0;
+                        prev = 0;
+                        while (l < dataset.attribute(k).numValues() && big == false) {
+                            t = Double.valueOf(n.nextElement().toString());
+
+                            //System.out.println(prev + "   " + t);
+                            if (Double.valueOf(instance.stringValue(k)) <= t) {
+                                big = true;
+                            } else {
+                                prev = t;
+                            }
+
+                            l++;    
+                        }
+
+                        if (big == true && t != Double.valueOf(instance.stringValue(k))) {
+                            System.out.println(prev + "   " + Double.valueOf(instance.stringValue(k)) + "   " + t);
+                        }
+                        //x = l - 1;
+
+                        if (classIdx < 2) {
+                            c = 2;
+                        } else {
+                            c = 1;
+                        }
+
+                        if (big == true && l > c) {
+                            if ((Double.valueOf(instance.stringValue(k)) - prev) <= (t - Double.valueOf(instance.stringValue(k)))) {
+                                x = l - 2;
+                            } else {
+                                x = l - 1;
+                            }
                         } else {
                             x = l - 1;
                         }
-                    } else {
-                        x = l - 1;
                     }
+                    
                 } else {
                     x = dataset.attribute(k).indexOfValue(instance.stringValue(k));
                 }
