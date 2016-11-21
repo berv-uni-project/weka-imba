@@ -241,8 +241,8 @@ public class FFNNTubes extends AbstractClassifier implements Serializable{
         }
         
         int z = 0;
-        double valMSE = 0.0;
-        while ((z <= nEpoch) && (accuracy < 0.99)) {
+        double valMSE = 100.0;
+        while ((z <= nEpoch) && (valMSE >= 0.001)) {
             for (int j = 0; j < nData; j++) {
                 feedForward(filteredData.get(j));
                 
