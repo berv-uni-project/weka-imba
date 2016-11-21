@@ -246,7 +246,7 @@ public class MainWindow extends javax.swing.JFrame {
         if(evt.getSource()==this.executeButton) {
             if (selectClassifierBox.getSelectedIndex() == 0) {
                 // FFNN 
-                Classifier fn = new FFNNTubes(0.9,1,20,100000); //ubahnya disini (learningRate, jumlah hidden layer, jumlah neuron di hidden, jumlah epoch)
+                Classifier fn = new FFNNTubes(0.95,1,40,100000); //ubahnya disini (learningRate, jumlah hidden layer, jumlah neuron di hidden, jumlah epoch)
                 Classifier model=null; 
                 
                 try { 
