@@ -221,7 +221,7 @@ public class MainWindow extends javax.swing.JFrame {
                     File file = this.filechooser.getSelectedFile();
                     this.isiStatus.setText("Membuka: " + file.getName() + ".\n");
                     this.data = ConverterUtils.DataSource.read(file.getAbsolutePath());
-                    this.data.setClassIndex(this.data.attribute("LabelSport").index());
+                    this.data.setClassIndex(this.data.attribute("class").index());
                     this.instancesValue.setText(String.valueOf(this.data.numInstances()));
                     this.attributesValue.setText(String.valueOf(this.data.numAttributes()));
                     this.relationValue.setText(String.valueOf(this.data.relationName()));
