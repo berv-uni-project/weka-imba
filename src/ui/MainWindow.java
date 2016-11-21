@@ -294,6 +294,15 @@ public class MainWindow extends javax.swing.JFrame {
                         model  = (Classifier) SerializationHelper.read(x.getPath()); 
                         eval1.evaluateModel(model, ueval);
                         System.out.println(eval1.toSummaryString());
+                        
+                        
+                         Evaluation evaluation = new Evaluation(ueval);
+                        // Evaluate
+                        //evaluation.crossValidateModel(fn, ueval, 10, new Random(1));
+                        //this.resultTextArea.setText(evaluation.toSummaryString("\nPunya Sendiri : \n== Summary ==\n",false));
+                        //this.resultTextArea.append(evaluation.toClassDetailsString("\n== Detailed Accuracy By Class ==\n"));
+                        //this.resultTextArea.append(evaluation.toMatrixString("\n== Confusion Matrix ==\n"));
+                        //this.isiStatus.setText("Running Cross Validation Completed");
                     } catch (Exception ex) { 
                         System.out.println("File model tidak dapat terbaca"); 
                     } 
@@ -301,18 +310,9 @@ public class MainWindow extends javax.swing.JFrame {
                     Logger.getLogger(MainWindow.class.getName()).log(Level.SEVERE, null, ex); 
                 }
             
-                    Evaluation evaluation = new Evaluation(ueval);
-                    // Evaluate
-                    evaluation.crossValidateModel(fn, ueval, 10, new Random(1));
-                    this.resultTextArea.setText(evaluation.toSummaryString("\nPunya Sendiri : \n== Summary ==\n",false));
-                    this.resultTextArea.append(evaluation.toClassDetailsString("\n== Detailed Accuracy By Class ==\n"));
-                    this.resultTextArea.append(evaluation.toMatrixString("\n== Confusion Matrix ==\n"));
-                    this.isiStatus.setText("Running Cross Validation Completed");
+                   
                     
 
-                }   catch (Exception ex) {
-                    Logger.getLogger(MainWindow.class.getName()).log(Level.SEVERE, null, ex);
-                }
             } else if (selectClassifierBox.getSelectedIndex() == 1) {
                 try {
                     Evaluation evaluation = new Evaluation(this.data);

@@ -253,6 +253,7 @@ public class FFNNTubes extends AbstractClassifier implements Serializable{
             }
             
             countError(filteredData);
+            System.out.println("ACCURACY " + z + " : " + accuracy);
             z++;
         }
     }
