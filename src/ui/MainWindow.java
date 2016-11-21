@@ -348,9 +348,7 @@ public class MainWindow extends javax.swing.JFrame {
                             default:
                                 this.isiStatus.setText("Do Nothing!");
                                 break;
-                        }
-                        
-                        
+                        }                    
                         this.saveModelButton.setEnabled(true);
                     } catch (Exception ex) {
                         Logger.getLogger(MainWindow.class.getName()).log(Level.SEVERE, null, ex);

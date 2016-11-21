@@ -88,7 +88,7 @@ public class FFNNTubes extends AbstractClassifier implements Serializable{
             Weight1 = new double[nOutput][nAttribute+1];
             for (int i = 0; i < nOutput; i++) {
                 for (int j = 0; j <= nAttribute; j++) {
-                    Weight1[i][j] = randomInRange(-1, 1);
+                    Weight1[i][j] = randomInRange(-0.5, 0.5);
                 } 
             }
         } else {
@@ -96,13 +96,13 @@ public class FFNNTubes extends AbstractClassifier implements Serializable{
             Weight2 = new double[nOutput][nNeuron+1];
             for (int i = 0; i <= nNeuron; i++) {
                 for (int j = 0; j <= nAttribute; j++) {
-                    Weight1[i][j] = randomInRange(-1, 1);
+                    Weight1[i][j] = randomInRange(-0.5, 0.5);
                 } 
             }
             
             for (int i = 0; i < nOutput; i++) {
                 for (int j = 0; j <= nNeuron; j++) {
-                    Weight2[i][j] = randomInRange(-1, 1);
+                    Weight2[i][j] = randomInRange(-0.5, 0.5);
                 } 
             }
         }
