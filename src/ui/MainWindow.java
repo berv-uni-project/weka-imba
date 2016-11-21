@@ -12,6 +12,8 @@ import java.util.Random;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.JFileChooser;
+import javax.swing.JFrame;
+import javax.swing.JOptionPane;
 import javax.swing.plaf.metal.MetalLookAndFeel;
 import javax.swing.plaf.metal.OceanTheme;
 import weka.classifiers.Classifier;
@@ -52,6 +54,8 @@ public class MainWindow extends javax.swing.JFrame {
         mainPanel = new javax.swing.JPanel();
         openButton = new javax.swing.JButton();
         saveButton = new javax.swing.JButton();
+        loadModelButton = new javax.swing.JButton();
+        saveModelButton = new javax.swing.JButton();
         datasetStatusPanel = new javax.swing.JPanel();
         relationLabel = new javax.swing.JLabel();
         relationValue = new javax.swing.JLabel();
@@ -64,9 +68,15 @@ public class MainWindow extends javax.swing.JFrame {
         selectMethodePanel = new javax.swing.JPanel();
         selectClassifierBox = new javax.swing.JComboBox<>();
         selectEvaluationBox = new javax.swing.JComboBox<>();
-        selectEvaluationPanel = new javax.swing.JPanel();
-        jLabel1 = new javax.swing.JLabel();
-        jTextField1 = new javax.swing.JTextField();
+        FFNNProperties = new javax.swing.JPanel();
+        iterationLabel = new javax.swing.JLabel();
+        iterationValue = new javax.swing.JTextField();
+        learningRateLabel = new javax.swing.JLabel();
+        learningRateValue = new javax.swing.JTextField();
+        neuronLabel = new javax.swing.JLabel();
+        neuronValue = new javax.swing.JTextField();
+        hiddenLayerLabel = new javax.swing.JLabel();
+        hiddenLayerValue = new javax.swing.JTextField();
         runningPane = new javax.swing.JPanel();
         resultLabel = new javax.swing.JLabel();
         resultPane = new javax.swing.JScrollPane();
@@ -101,8 +111,22 @@ public class MainWindow extends javax.swing.JFrame {
         saveButton.setEnabled(false);
         mainPanel.add(saveButton);
 
+        loadModelButton.setText("Load Model");
+        loadModelButton.setEnabled(false);
+        loadModelButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                loadModelButtonActionPerformed(evt);
+            }
+        });
+        mainPanel.add(loadModelButton);
+
+        saveModelButton.setText("Save Model");
+        saveModelButton.setEnabled(false);
+        mainPanel.add(saveModelButton);
+
         allPanel.add(mainPanel);
 
+        datasetStatusPanel.setBorder(javax.swing.BorderFactory.createTitledBorder("Data Set Status"));
         datasetStatusPanel.setLayout(new java.awt.GridLayout(2, 2));
 
         relationLabel.setText("Relation :");
@@ -123,6 +147,8 @@ public class MainWindow extends javax.swing.JFrame {
 
         allPanel.add(datasetStatusPanel);
 
+        selectMethodePanel.setBorder(javax.swing.BorderFactory.createTitledBorder("Methode Properties"));
+
         selectClassifierLabel.setText("Select Classifier : ");
         selectMethodePanel.add(selectClassifierLabel);
 
@@ -139,15 +165,41 @@ public class MainWindow extends javax.swing.JFrame {
 
         allPanel.add(selectMethodePanel);
 
-        jLabel1.setText("Jumlah Iterasi :");
-        selectEvaluationPanel.add(jLabel1);
+        FFNNProperties.setBorder(javax.swing.BorderFactory.createTitledBorder("FFNN Properties"));
+        FFNNProperties.setName("FFNN Properties"); // NOI18N
+        FFNNProperties.setLayout(new java.awt.GridLayout(2, 4, 5, 5));
 
-        jTextField1.setHorizontalAlignment(javax.swing.JTextField.CENTER);
-        jTextField1.setPreferredSize(new java.awt.Dimension(40, 20));
-        selectEvaluationPanel.add(jTextField1);
+        iterationLabel.setText("Jumlah Iterasi :");
+        FFNNProperties.add(iterationLabel);
 
-        allPanel.add(selectEvaluationPanel);
+        iterationValue.setHorizontalAlignment(javax.swing.JTextField.CENTER);
+        iterationValue.setPreferredSize(new java.awt.Dimension(60, 20));
+        FFNNProperties.add(iterationValue);
 
+        learningRateLabel.setText("Learning Rate :");
+        FFNNProperties.add(learningRateLabel);
+
+        learningRateValue.setHorizontalAlignment(javax.swing.JTextField.CENTER);
+        learningRateValue.setPreferredSize(new java.awt.Dimension(30, 20));
+        FFNNProperties.add(learningRateValue);
+
+        neuronLabel.setText("Jumlah Neuron :");
+        FFNNProperties.add(neuronLabel);
+
+        neuronValue.setHorizontalAlignment(javax.swing.JTextField.CENTER);
+        neuronValue.setPreferredSize(new java.awt.Dimension(30, 20));
+        FFNNProperties.add(neuronValue);
+
+        hiddenLayerLabel.setText("Jumlah Hidden Layer :");
+        FFNNProperties.add(hiddenLayerLabel);
+
+        hiddenLayerValue.setHorizontalAlignment(javax.swing.JTextField.CENTER);
+        hiddenLayerValue.setPreferredSize(new java.awt.Dimension(30, 20));
+        FFNNProperties.add(hiddenLayerValue);
+
+        allPanel.add(FFNNProperties);
+
+        runningPane.setBorder(javax.swing.BorderFactory.createTitledBorder("Result Panel"));
         runningPane.setLayout(new javax.swing.BoxLayout(runningPane, javax.swing.BoxLayout.LINE_AXIS));
 
         resultLabel.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
@@ -171,6 +223,8 @@ public class MainWindow extends javax.swing.JFrame {
         runningPane.add(executeButton);
 
         allPanel.add(runningPane);
+
+        statusPanel.setBorder(javax.swing.BorderFactory.createBevelBorder(javax.swing.border.BevelBorder.LOWERED, java.awt.Color.black, java.awt.Color.white, java.awt.Color.black, java.awt.Color.white));
 
         statusLabel.setText("Working Status :");
         statusPanel.add(statusLabel);
@@ -221,7 +275,11 @@ public class MainWindow extends javax.swing.JFrame {
                     File file = this.filechooser.getSelectedFile();
                     this.isiStatus.setText("Membuka: " + file.getName() + ".\n");
                     this.data = ConverterUtils.DataSource.read(file.getAbsolutePath());
-                    this.data.setClassIndex(this.data.attribute("LabelSport").index());
+                    // Minta input nama kelas
+                    JFrame frame = new JFrame("Class Name");
+                    String className = JOptionPane.showInputDialog(frame, "Class Name");
+                    
+                    this.data.setClassIndex(this.data.attribute(className).index());
                     this.instancesValue.setText(String.valueOf(this.data.numInstances()));
                     this.attributesValue.setText(String.valueOf(this.data.numAttributes()));
                     this.relationValue.setText(String.valueOf(this.data.relationName()));
@@ -231,7 +289,7 @@ public class MainWindow extends javax.swing.JFrame {
                     this.selectEvaluationBox.setEnabled(true);
                     this.selectClassifierBox.setEnabled(true);
                     //this.addInstanceButton.setEnabled(true);
-                    //this.loadModelButton.setEnabled(true);
+                    this.loadModelButton.setEnabled(true);
                     this.isiStatus.setText("Membuka berkas "+file.getName()+" berhasil!");
                 } catch (Exception ex) {
                     Logger.getLogger(MainWindow.class.getName()).log(Level.SEVERE, null, ex);
@@ -244,105 +302,115 @@ public class MainWindow extends javax.swing.JFrame {
 
     private void executeButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_executeButtonActionPerformed
         if(evt.getSource()==this.executeButton) {
-            if (selectClassifierBox.getSelectedIndex() == 0) {
-                // FFNN 
-                Classifier fn = new FFNNTubes(0.9,1,20,100000); //ubahnya disini (learningRate, jumlah hidden layer, jumlah neuron di hidden, jumlah epoch)
-                Classifier model=null; 
-                
-                try { 
-                     
-                    fn.buildClassifier(this.data); 
-                    model = fn; 
-                    Instances ueval1 = this.data;
-                    Normalize norm = new Normalize();
-                    Filter filter = new NominalToBinary();
-                    norm.setInputFormat(ueval1);
-        
-                    Instances ueval = Filter.useFilter(ueval1, norm);
-                    try { 
-                        filter.setInputFormat(ueval); 
-
-                        for (Instance i1 : ueval) { 
-                            filter.input(i1); 
-                        } 
-
-                        filter.batchFinished(); 
-                    } catch (Exception ex) { 
-                        Logger.getLogger(NBTubes.class.getName()).log(Level.SEVERE, null, ex); 
-                    } 
-                    //buat evaluasi
-                    Evaluation eval = new Evaluation(ueval); 
-                    eval.evaluateModel(fn, ueval); 
-                    System.out.println(eval.toSummaryString()); 
-                    
-                    //ngesave file model
-                    try { 
-                        SerializationHelper.write("savenih.nfd", fn); //"savenih.nfd" mestinya bisa dari masukan user
-                        System.out.println("Model berhasil diciptakan"); 
-                    } catch (Exception ex) { 
-                        System.out.println("Model gagal diciptakan"); 
-                    }
-                    
-                    //buka model
-                    JFileChooser file = new JFileChooser(); 
-
-                    int open = file.showOpenDialog(file); 
-
-                    File x = file.getSelectedFile(); 
-                    Evaluation eval1 = new Evaluation(ueval);
-                    try { 
-                        model  = (Classifier) SerializationHelper.read(x.getPath()); 
-                        eval1.evaluateModel(model, ueval);
-                        System.out.println(eval1.toSummaryString());
+            switch (this.selectClassifierBox.getSelectedIndex()) {
+                case 0:
+                    try {
+                        // FFNN Section
+                        double learningRate = Double.valueOf(this.learningRateValue.getText());
+                        int hiddenLayer = Integer.valueOf(this.hiddenLayerValue.getText());
+                        int jumlahNeuron = Integer.valueOf(this.neuronValue.getText());
+                        int jumlahIterasi = Integer.valueOf(this.iterationValue.getText());
+                        Classifier fn;
+                        if ( (learningRate > 0.0 && learningRate < 1.0) && (hiddenLayer >= 0) && (jumlahNeuron > 0) && (jumlahIterasi > 0)) {
+                            // Valid Input
+                            fn = new FFNNTubes(learningRate,hiddenLayer,jumlahNeuron,jumlahIterasi);
+                        } else {
+                            // Default Running
+                            fn = new FFNNTubes(0.9,1,20,100000);
+                        }
+                        fn.buildClassifier(this.data);
+                        this.loadedModel = fn;
+                        Instances ueval1 = this.data;
+                        Normalize norm = new Normalize();
+                        Filter filter = new NominalToBinary();
+                        norm.setInputFormat(ueval1);
+                        
+                        Instances ueval = Filter.useFilter(ueval1, norm);
+                        filter.setInputFormat(ueval);
+                        
+                        for (Instance i1 : ueval) {
+                            filter.input(i1);
+                        }
+                        filter.batchFinished();
+                        
+                        // Evaluasi
+                        switch (this.selectEvaluationBox.getSelectedIndex()) {
+                            case 0:
+                                Evaluation eval = new Evaluation(ueval);
+                                eval.evaluateModel(fn, ueval);
+                                this.resultTextArea.setText(eval.toSummaryString("\n== Summary ==\n",false));
+                                this.resultTextArea.append(eval.toClassDetailsString("\n== Detailed Accuracy By Class ==\n"));
+                                this.resultTextArea.append(eval.toMatrixString("\n== Confusion Matrix ==\n"));
+                                this.isiStatus.setText("Running Cross Validation with FFNN Model Completed");
+                                break;
+                            case 1:
+                                break;
+                            default:
+                                this.isiStatus.setText("Do Nothing!");
+                                break;
+                        }
                         
                         
-                         Evaluation evaluation = new Evaluation(ueval);
-                        // Evaluate
-                        //evaluation.crossValidateModel(fn, ueval, 10, new Random(1));
-                        //this.resultTextArea.setText(evaluation.toSummaryString("\nPunya Sendiri : \n== Summary ==\n",false));
-                        //this.resultTextArea.append(evaluation.toClassDetailsString("\n== Detailed Accuracy By Class ==\n"));
-                        //this.resultTextArea.append(evaluation.toMatrixString("\n== Confusion Matrix ==\n"));
-                        //this.isiStatus.setText("Running Cross Validation Completed");
-                    } catch (Exception ex) { 
-                        System.out.println("File model tidak dapat terbaca"); 
-                    } 
-                } catch (Exception ex) { 
-                    Logger.getLogger(MainWindow.class.getName()).log(Level.SEVERE, null, ex); 
-                }
-            
-                   
-                    
-
-            } else if (selectClassifierBox.getSelectedIndex() == 1) {
-                try {
-                    Evaluation evaluation = new Evaluation(this.data);
-                    Evaluation evaluation1 = new Evaluation(this.data);
-                    // Naive Bayes
-                    NBTubes nb = new NBTubes();
-                    nb.buildClassifier(this.data);
-                    // Cuman buat perbandingan
-                    NaiveBayes ntest = new NaiveBayes();
-                    ntest.buildClassifier(this.data);
-
-                    // Evaluate
-                    evaluation.crossValidateModel(nb, this.data, 10, new Random(1));
-                    this.resultTextArea.setText(evaluation.toSummaryString("\nPunya Sendiri : \n== Summary ==\n",false));
-                    this.resultTextArea.append(evaluation.toClassDetailsString("\n== Detailed Accuracy By Class ==\n"));
-                    this.resultTextArea.append(evaluation.toMatrixString("\n== Confusion Matrix ==\n"));
-                    this.isiStatus.setText("Running Cross Validation Completed");
-                    
-                    evaluation1.crossValidateModel(ntest, this.data, 10, new Random(1));
-                    this.resultTextArea.append(evaluation1.toSummaryString("\nDari WEKA : \n== Summary ==\n",false));
-                    this.resultTextArea.append(evaluation1.toClassDetailsString("\n== Detailed Accuracy By Class ==\n"));
-                    this.resultTextArea.append(evaluation1.toMatrixString("\n== Confusion Matrix ==\n"));
-                    this.isiStatus.setText("Running Cross Validation Completed");
-                    //this.saveModelButton.setEnabled(true);
-                } catch (Exception ex) {
-                    Logger.getLogger(MainWindow.class.getName()).log(Level.SEVERE, null, ex);
-                }
+                        this.saveModelButton.setEnabled(true);
+                    } catch (Exception ex) {
+                        Logger.getLogger(MainWindow.class.getName()).log(Level.SEVERE, null, ex);
+                    }   break;
+                case 1:
+                    try {
+                        // Naive Bayes Section
+                        Classifier nb = new NBTubes();
+                        nb.buildClassifier(this.data);
+                        this.loadedModel = nb;
+                        
+                        // Evaluasi
+                        switch (this.selectEvaluationBox.getSelectedIndex()) {
+                            case 0:
+                                Evaluation eval = new Evaluation(this.data);
+                                eval.evaluateModel(nb, this.data);
+                                this.resultTextArea.setText(eval.toSummaryString("\n== Summary ==\n",false));
+                                this.resultTextArea.append(eval.toClassDetailsString("\n== Detailed Accuracy By Class ==\n"));
+                                this.resultTextArea.append(eval.toMatrixString("\n== Confusion Matrix ==\n"));
+                                this.isiStatus.setText("Running Cross Validation with NB Completed");
+                                break;
+                            case 1:
+                                break;
+                            default:
+                                this.isiStatus.setText("Do Nothing!");
+                                break;
+                        }
+                        
+                        this.saveModelButton.setEnabled(true);
+                    } catch (Exception ex) {
+                        Logger.getLogger(MainWindow.class.getName()).log(Level.SEVERE, null, ex);
+                    }   break;
+                default:
+                    this.isiStatus.setText("Do Nothing!");
+                    break;
             }
         }
     }//GEN-LAST:event_executeButtonActionPerformed
+
+    private void loadModelButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_loadModelButtonActionPerformed
+        if (evt.getSource() == this.loadModelButton) {
+            this.filechooser.setAcceptAllFileFilterUsed(false);
+            this.filechooser.removeChoosableFileFilter(arffformat);
+            this.filechooser.setFileFilter(modelformat);
+            int returnVal = this.filechooser.showOpenDialog(MainWindow.this);
+
+            if (returnVal == JFileChooser.APPROVE_OPTION) {
+                try {
+                    File file = this.filechooser.getSelectedFile();
+                    this.isiStatus.setText("Load module: " + file.getName() + ".\n");
+                    loadedModel = (Classifier) SerializationHelper.read(file.getAbsolutePath());
+                    
+                } catch (Exception ex) {
+                    Logger.getLogger(MainWindow.class.getName()).log(Level.SEVERE, null, ex);
+                }
+            } else {
+                this.isiStatus.setText("Load model canceled by user.\n");
+            }
+        }
+    }//GEN-LAST:event_loadModelButtonActionPerformed
 
     /**
      * @param args the command line arguments
@@ -381,10 +449,12 @@ public class MainWindow extends javax.swing.JFrame {
     }
     // Variables Data
     private Instances data;
+    private Classifier loadedModel;
     private final JFileChooser filechooser = new JFileChooser();
     private final ArffFile arffformat = new ArffFile();
     private final ModelFile modelformat = new ModelFile();
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JPanel FFNNProperties;
     private javax.swing.JMenuItem aboutHelpMenuItem;
     private javax.swing.JMenu aboutMenu;
     private javax.swing.JPanel allPanel;
@@ -394,15 +464,22 @@ public class MainWindow extends javax.swing.JFrame {
     private javax.swing.JButton executeButton;
     private javax.swing.JMenuItem exitFileMenuItem;
     private javax.swing.JMenu fileMenu;
+    private javax.swing.JLabel hiddenLayerLabel;
+    private javax.swing.JTextField hiddenLayerValue;
     private javax.swing.Box.Filler horizontalFillLeft;
     private javax.swing.Box.Filler horizontalFillRight;
     private javax.swing.JLabel instancesLabel;
     private javax.swing.JLabel instancesValue;
     private javax.swing.JLabel isiStatus;
-    private javax.swing.JLabel jLabel1;
-    private javax.swing.JTextField jTextField1;
+    private javax.swing.JLabel iterationLabel;
+    private javax.swing.JTextField iterationValue;
+    private javax.swing.JLabel learningRateLabel;
+    private javax.swing.JTextField learningRateValue;
+    private javax.swing.JButton loadModelButton;
     private javax.swing.JMenuBar mainMenuBar;
     private javax.swing.JPanel mainPanel;
+    private javax.swing.JLabel neuronLabel;
+    private javax.swing.JTextField neuronValue;
     private javax.swing.JButton openButton;
     private javax.swing.JLabel relationLabel;
     private javax.swing.JLabel relationValue;
@@ -411,11 +488,11 @@ public class MainWindow extends javax.swing.JFrame {
     private javax.swing.JTextArea resultTextArea;
     private javax.swing.JPanel runningPane;
     private javax.swing.JButton saveButton;
+    private javax.swing.JButton saveModelButton;
     private javax.swing.JComboBox<String> selectClassifierBox;
     private final javax.swing.JLabel selectClassifierLabel = new javax.swing.JLabel();
     private javax.swing.JComboBox<String> selectEvaluationBox;
     private final javax.swing.JLabel selectEvaluationLabel = new javax.swing.JLabel();
-    private javax.swing.JPanel selectEvaluationPanel;
     private javax.swing.JPanel selectMethodePanel;
     private javax.swing.JLabel statusLabel;
     private javax.swing.JPanel statusPanel;
