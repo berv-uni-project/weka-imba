@@ -14,7 +14,7 @@ import weka.core.Instance;
 import weka.core.Instances;
 import weka.filters.unsupervised.attribute.Normalize;
 import weka.filters.Filter;
-import weka.filters.supervised.attribute.NominalToBinary;
+import weka.filters.unsupervised.attribute.NominalToBinary;
 
 /**
  *
@@ -28,6 +28,7 @@ public class FFNNTubes extends AbstractClassifier implements Serializable{
     private int nOutput; //jumlah output masukan (= jumlah kelas)
     private int nData; //jumlah data train yang menjadi masukan
     private double learningRate; //nilai learning rate
+    private double accuracy;
     
     private double[] input;
     private double[] hidden;
@@ -35,11 +36,11 @@ public class FFNNTubes extends AbstractClassifier implements Serializable{
     
     private double[][] target;
     
-    public void FFNNTubes() {
-        nHidden = 0;
-        nNeuron = 0;
-        nEpoch = 100;
-        learningRate = 0.875;
+    public FFNNTubes(double learn, int hid, int neuron,int iter) {
+        learningRate = learn;
+        nHidden = hid;
+        nNeuron = neuron;
+        nEpoch = iter;
     }
     
     protected static Random random = new Random();
@@ -55,34 +56,29 @@ public class FFNNTubes extends AbstractClassifier implements Serializable{
         return result;
     }
     
-    // gak perlu kalau untuk 0.0 sampai 1.0, random.nextDouble() udah 0.0 sampai 1.0
     public static double randomInRange(double min, double max) {
         double range = max - min;
         double scaled = random.nextDouble() * range;
         double shifted = scaled + min;
-        return shifted; // == (rand.nextDouble() * (max-min)) + min;
+        return shifted;
     }
     
     //setter untuk jumlah hidden layer dalam MLP
-    //nilai default = 0
     public void setHiddenLayer(int layer) {
         this.nHidden = layer;
     }
     
     //setter untuk jumlah neuron dalam hidden layer
-    //nilai default = 0
     public void setNeuronNum(int num) {
         this.nNeuron = num;
     }
     
     //setter untuk jumlah iterasi dalam learning
-    //nilai default = 500
     public void setEpoch(int i) {
         this.nEpoch = i;
     }
     
     //setter untuk nilai learning rate
-    //nilai default = 0.3
     public void setLearningRate(int lr) {
         this.learningRate = lr;
     }
@@ -91,22 +87,22 @@ public class FFNNTubes extends AbstractClassifier implements Serializable{
         if (nHidden == 0) {
             Weight1 = new double[nOutput][nAttribute+1];
             for (int i = 0; i < nOutput; i++) {
-                for (int j = 1; j <= nAttribute; j++) {
-                    Weight1[i][j] = random.nextDouble();
+                for (int j = 0; j <= nAttribute; j++) {
+                    Weight1[i][j] = randomInRange(-5, 5);
                 } 
             }
         } else {
             Weight1 = new double[nNeuron+1][nAttribute+1];
             Weight2 = new double[nOutput][nNeuron+1];
-            for (int i = 1; i < nNeuron; i++) {
-                for (int j = 1; j <= nAttribute; j++) {
-                    Weight1[i][j] = random.nextDouble();
+            for (int i = 0; i <= nNeuron; i++) {
+                for (int j = 0; j <= nAttribute; j++) {
+                    Weight1[i][j] = randomInRange(-5, 5);
                 } 
             }
             
             for (int i = 0; i < nOutput; i++) {
-                for (int j = 1; j <= nNeuron; j++) {
-                    Weight2[i][j] = random.nextDouble();
+                for (int j = 0; j <= nNeuron; j++) {
+                    Weight2[i][j] = randomInRange(-5, 5);
                 } 
             }
         }
@@ -119,17 +115,15 @@ public class FFNNTubes extends AbstractClassifier implements Serializable{
             Instance current = data.get(i);
             for (int j = 0; j < nOutput; j++) {
                 if (j == current.classValue()) {
-                    target[i][j] = random.nextDouble();
+                    target[i][j] = 1.0;
                 } else {
-                    target[i][j] = random.nextDouble();
+                    target[i][j] = 0.0;
                 }
             } 
         }
     }
     
-    private void feedForward(Instance instance, double[] tar) {
-        ////System.out.println("Masuk Sini");
-        //System.out.println("WEIGHT: " + Weight1[1][1]);
+    private void feedForward(Instance instance) {
         input = new double[nAttribute+1];
         input[0] = 1.0;
         for (int i = 1; i <= nAttribute; i++) {
@@ -139,7 +133,6 @@ public class FFNNTubes extends AbstractClassifier implements Serializable{
             output = new double[nOutput];
             for (int i = 0; i < nOutput; i++) {
                 output[i] = 0.0;
-                Weight1[i][0] = tar[i];
                 double sum = 0.0;
                 for (int j = 0; j <= nAttribute; j++) {
                     sum = sum + (Weight1[i][j] * input[j]);
@@ -151,7 +144,6 @@ public class FFNNTubes extends AbstractClassifier implements Serializable{
             output = new double[nOutput];
             for (int i = 0; i <= nNeuron; i++) {
                 hidden[i] = 0.0;
-                Weight1[i][0] = 0.0;
                 double sum = 0.0;
                 for (int j = 0; j <= nAttribute; j++) {
                     sum = sum + (Weight1[i][j] * input[j]); 
@@ -161,7 +153,6 @@ public class FFNNTubes extends AbstractClassifier implements Serializable{
             
             for (int i = 0; i < nOutput; i++) {
                 output[i] = 0.0;
-                Weight2[i][0] = tar[i];
                 double sum = 0.0;
                 for (int j = 0; j <= nNeuron; j++) {
                     sum = sum + (Weight2[i][j] * hidden[j]); 
@@ -173,8 +164,11 @@ public class FFNNTubes extends AbstractClassifier implements Serializable{
     
     private void updateWeight(double[] tar) {
         for (int i = 0; i < nOutput; i++) {
-            for (int j = 1; j <= nAttribute; j++) { //ini bias ga diupdate
-                Weight1[i][j] = Weight1[i][j] + (learningRate * (tar[i] - output[i]) * input[j]);
+            for (int j = 0; j <= nAttribute; j++) {
+                double tarout = (double) tar[i] - (double) output[i];
+                double ti = tarout * (double) input[j];
+                double temp = (double)learningRate * ti;
+                Weight1[i][j] = Weight1[i][j] + (temp);
             }
         }
     }
@@ -189,29 +183,29 @@ public class FFNNTubes extends AbstractClassifier implements Serializable{
             error2[i] = output[i] * (1 - output[i]) * (tar[i] - output[i]);
         }
         
-        for (int i = 1; i <= nNeuron; i++) {
+        for (int i = 0; i <= nNeuron; i++) {
             double sigma = 0.0;
-            for (int j = 1; j <= nOutput; j++) {
-                sigma = sigma + (Weight2[i][j] * error2[j]);
+            for (int j = 0; j < nOutput; j++) {
+                sigma = sigma + (Weight2[j][i] * error2[j]);
             }
             error1[i] = hidden[i] * (1 - hidden[i]) * sigma;
         }
         
         for (int i = 0; i < nOutput; i++) {
-            for (int j = 1; j <= nNeuron; j++) {
+            for (int j = 0; j <= nNeuron; j++) {
                 Weight2[i][j] = Weight2[i][j] + (learningRate * error2[i] * hidden[j]);
             }
         }
         
-        for (int i = 1; i <= nNeuron; i++) {
-            for (int j = 1; j <= nAttribute; j++) {
+        for (int i = 0; i <= nNeuron; i++) {
+            for (int j = 0; j <= nAttribute; j++) {
                 Weight1[i][j] = Weight1[i][j] + (learningRate * error1[i] * input[j]);
             }
         }
     }
     
     @Override
-    public void buildClassifier(Instances data) throws Exception {
+    public void buildClassifier(Instances data) throws Exception {        
         getCapabilities().testWithFail(data);
         
         data.deleteWithMissingClass();
@@ -246,9 +240,10 @@ public class FFNNTubes extends AbstractClassifier implements Serializable{
             Logger.getLogger(NBTubes.class.getName()).log(Level.SEVERE, null, ex);
         }
         
-        for (int i = 0; i < nEpoch; i++) {
+        int z = 0;
+        while ((z <= nEpoch) && (accuracy < 0.99)) {
             for (int j = 0; j < nData; j++) {
-                feedForward(filteredData.get(j), target[j]);
+                feedForward(filteredData.get(j));
                 
                 if (nHidden == 0) {
                     updateWeight(target[j]);
@@ -256,17 +251,10 @@ public class FFNNTubes extends AbstractClassifier implements Serializable{
                     backPropagation(target[j]);
                 }
             }
+            
+            countError(filteredData);
+            z++;
         }
-        /*
-        for (int i = 0; i < nData; i++) {
-            System.out.println("Hasil: " + i + " " + classifyInstance(filteredData.get(i)));
-        }
-        
-        for (int i = 0; i < nOutput; i++) {
-            for (int j = 0; j <= nAttribute; j++) {
-                //System.out.println("di build classifier weight " + i + " " + j + " : " + Weight1[i][j]);
-            }
-        }*/
     }
     
     public double[][] getWeight1 () {
@@ -274,48 +262,30 @@ public class FFNNTubes extends AbstractClassifier implements Serializable{
     }
     
     @Override 
-    public double classifyInstance(Instance instance) throws Exception { 
-        double[] tar = new double[nOutput];
-        for (int i = 0; i < nOutput; i++) {
-            if (instance.classValue() == i){
-                tar[i] = random.nextInt(nOutput);
-            } else {
-                tar[i] = 0.0;
-            }
-        }
+    public double classifyInstance(Instance instance) throws Exception {
+        feedForward(instance); 
         
-       
-        
-        feedForward(instance, tar); 
-        
-        
-        /*
-         for (int i = 0; i < nAttribute; i++) {
-            System.out.println("Input: " + input[i]);
-        }
-         
-        for (int i = 0; i < nOutput; i++) {
-            for (int j = 0; j <= nAttribute; j++) {
-                //////System.out.println("di classify instance weight " + i + " " + j + " : " + Weight1[i][j]);
-            }
-        }
-        */
-        //int test = random.nextInt(nOutput);
         double max = 0.0; 
         int maxIdx = 0; 
-        int i = 0; 
-        ////System.out.println("Ouput length: " + output.length);
-        while (i < output.length) { 
-           // System.out.println("Ouput di classify instance luar: " + output[i]);
-            if (output[i] > max) { 
-                    ////System.out.println("Ouput di classify instance dalem: " + output[i]);
+        int i = 0;
+        while (i < output.length) {
+            if (output[i] > max) {
                     max = output[i]; 
                     maxIdx = i; 
             } 
             i++; 
-        } 
-        
-        System.out.println("maxIDX: " + maxIdx);
-        return maxIdx; 
+        }
+        return (double) maxIdx; 
+    }
+    
+    private void countError(Instances a) throws Exception {
+        int error = 0;
+        for (int i = 0; i < nData; i++) {
+            double temp = classifyInstance(a.get(i));
+            if (temp != a.get(i).classValue()) {
+                error = error + 1;
+            }
+        }
+        accuracy = ((double) nData - (double) error)/ (double)nData;
     }
 }

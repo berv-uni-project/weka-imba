@@ -5,7 +5,6 @@
  */
 package ui;
 
-import imba.classifier.FFNN;
 import imba.classifier.FFNNTubes;
 import imba.classifier.NBTubes;
 import java.io.File;
@@ -246,24 +245,20 @@ public class MainWindow extends javax.swing.JFrame {
     private void executeButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_executeButtonActionPerformed
         if(evt.getSource()==this.executeButton) {
             if (selectClassifierBox.getSelectedIndex() == 0) {
-            // FFNN 
-                Classifier fn = new FFNNTubes(); 
-                //Classifier model=null; 
-                //kalau mau rubah nilai hidden dan jumlah neuron lakukan disini 
-                // fn.setHiddenLayer(1); 
-                //  fn.setNeuronNum(5); 
+                // FFNN 
+                Classifier fn = new FFNNTubes(0.9,1,20,100000); //ubahnya disini (learningRate, jumlah hidden layer, jumlah neuron di hidden, jumlah epoch)
+                Classifier model=null; 
+                
                 try { 
                      
                     fn.buildClassifier(this.data); 
-                    //model = fn; 
-                    System.out.println("BATAAAAAAAAAAAAAAAAAAAAAAAAAAAAAASSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSS");
+                    model = fn; 
                     Instances ueval1 = this.data;
                     Normalize norm = new Normalize();
                     Filter filter = new NominalToBinary();
                     norm.setInputFormat(ueval1);
         
                     Instances ueval = Filter.useFilter(ueval1, norm);
-                    //filter.setInputFormat(filteredData); 
                     try { 
                         filter.setInputFormat(ueval); 
 
@@ -275,20 +270,40 @@ public class MainWindow extends javax.swing.JFrame {
                     } catch (Exception ex) { 
                         Logger.getLogger(NBTubes.class.getName()).log(Level.SEVERE, null, ex); 
                     } 
-                    
-                    System.out.println("SEBELUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUMMMMMMMMMMMMMMMMMMMMMM");
-                        for (int i = 0; i < ueval.size(); i++) {
-                        Instance coba = ueval.get(i);
-                        fn.classifyInstance(coba);
-                    }
-                    System.out.println("SESUDAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHH");
+                    //buat evaluasi
                     Evaluation eval = new Evaluation(ueval); 
                     eval.evaluateModel(fn, ueval); 
                     System.out.println(eval.toSummaryString()); 
                     
-                    Evaluation evaluation = new Evaluation(this.data);
+                    //ngesave file model
+                    try { 
+                        SerializationHelper.write("savenih.nfd", fn); //"savenih.nfd" mestinya bisa dari masukan user
+                        System.out.println("Model berhasil diciptakan"); 
+                    } catch (Exception ex) { 
+                        System.out.println("Model gagal diciptakan"); 
+                    }
+                    
+                    //buka model
+                    JFileChooser file = new JFileChooser(); 
+
+                    int open = file.showOpenDialog(file); 
+
+                    File x = file.getSelectedFile(); 
+                    Evaluation eval1 = new Evaluation(ueval);
+                    try { 
+                        model  = (Classifier) SerializationHelper.read(x.getPath()); 
+                        eval1.evaluateModel(model, ueval);
+                        System.out.println(eval1.toSummaryString());
+                    } catch (Exception ex) { 
+                        System.out.println("File model tidak dapat terbaca"); 
+                    } 
+                } catch (Exception ex) { 
+                    Logger.getLogger(MainWindow.class.getName()).log(Level.SEVERE, null, ex); 
+                }
+            
+                    Evaluation evaluation = new Evaluation(ueval);
                     // Evaluate
-                    evaluation.crossValidateModel(fn, this.data, 10, new Random(1));
+                    evaluation.crossValidateModel(fn, ueval, 10, new Random(1));
                     this.resultTextArea.setText(evaluation.toSummaryString("\nPunya Sendiri : \n== Summary ==\n",false));
                     this.resultTextArea.append(evaluation.toClassDetailsString("\n== Detailed Accuracy By Class ==\n"));
                     this.resultTextArea.append(evaluation.toMatrixString("\n== Confusion Matrix ==\n"));
