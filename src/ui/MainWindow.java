@@ -56,6 +56,7 @@ public class MainWindow extends javax.swing.JFrame {
         saveButton = new javax.swing.JButton();
         loadModelButton = new javax.swing.JButton();
         saveModelButton = new javax.swing.JButton();
+        dataTestButton = new javax.swing.JButton();
         datasetStatusPanel = new javax.swing.JPanel();
         relationLabel = new javax.swing.JLabel();
         relationValue = new javax.swing.JLabel();
@@ -84,8 +85,10 @@ public class MainWindow extends javax.swing.JFrame {
         executeButton = new javax.swing.JButton();
         statusPanel = new javax.swing.JPanel();
         statusLabel = new javax.swing.JLabel();
-        isiStatus = new javax.swing.JLabel();
+        statusValue = new javax.swing.JLabel();
         horizontalFillRight = new javax.swing.Box.Filler(new java.awt.Dimension(20, 0), new java.awt.Dimension(30, 0), new java.awt.Dimension(50, 0));
+        modelLabel = new javax.swing.JLabel();
+        modelValue = new javax.swing.JLabel();
         mainMenuBar = new javax.swing.JMenuBar();
         fileMenu = new javax.swing.JMenu();
         exitFileMenuItem = new javax.swing.JMenuItem();
@@ -128,6 +131,15 @@ public class MainWindow extends javax.swing.JFrame {
             }
         });
         mainPanel.add(saveModelButton);
+
+        dataTestButton.setText("Input Data Test");
+        dataTestButton.setEnabled(false);
+        dataTestButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                dataTestButtonActionPerformed(evt);
+            }
+        });
+        mainPanel.add(dataTestButton);
 
         allPanel.add(mainPanel);
 
@@ -233,12 +245,20 @@ public class MainWindow extends javax.swing.JFrame {
 
         statusLabel.setText("Working Status :");
         statusPanel.add(statusLabel);
-        statusPanel.add(isiStatus);
+
+        statusValue.setText("Idle");
+        statusPanel.add(statusValue);
+        statusPanel.add(horizontalFillRight);
+
+        modelLabel.setText("Model Status :");
+        statusPanel.add(modelLabel);
+
+        modelValue.setText("Not Available");
+        statusPanel.add(modelValue);
 
         allPanel.add(statusPanel);
 
         getContentPane().add(allPanel);
-        getContentPane().add(horizontalFillRight);
 
         fileMenu.setText("File");
 
@@ -278,7 +298,7 @@ public class MainWindow extends javax.swing.JFrame {
             if (returnVal == JFileChooser.APPROVE_OPTION) {
                 try {
                     File file = this.filechooser.getSelectedFile();
-                    this.isiStatus.setText("Membuka: " + file.getName() + ".\n");
+                    this.statusValue.setText("Membuka: " + file.getName() + ".\n");
                     this.data = ConverterUtils.DataSource.read(file.getAbsolutePath());
                     // Minta input nama kelas
                     JFrame frame = new JFrame("Class Name");
@@ -296,14 +316,13 @@ public class MainWindow extends javax.swing.JFrame {
                     this.executeButton.setEnabled(true);
                     this.selectEvaluationBox.setEnabled(true);
                     this.selectClassifierBox.setEnabled(true);
-                    //this.addInstanceButton.setEnabled(true);
                     this.loadModelButton.setEnabled(true);
-                    this.isiStatus.setText("Membuka berkas "+file.getName()+" berhasil!");
+                    this.statusValue.setText("Membuka berkas "+file.getName()+" berhasil!");
                 } catch (Exception ex) {
                     Logger.getLogger(MainWindow.class.getName()).log(Level.SEVERE, null, ex);
                 }
             } else {
-                this.isiStatus.setText("Open command cancelled by user.\n");
+                this.statusValue.setText("Open command cancelled by user.\n");
             }
         }
     }//GEN-LAST:event_openButtonActionPerformed
@@ -349,15 +368,17 @@ public class MainWindow extends javax.swing.JFrame {
                                 this.resultTextArea.setText(eval.toSummaryString("\n== Summary ==\n",false));
                                 this.resultTextArea.append(eval.toClassDetailsString("\n== Detailed Accuracy By Class ==\n"));
                                 this.resultTextArea.append(eval.toMatrixString("\n== Confusion Matrix ==\n"));
-                                this.isiStatus.setText("Running Cross Validation with FFNN Model Completed");
+                                this.statusValue.setText("Running Cross Validation with FFNN Model Completed");
                                 break;
                             case 1:
                                 break;
                             default:
-                                this.isiStatus.setText("Do Nothing!");
+                                this.statusValue.setText("Do Nothing!");
                                 break;
-                        }                    
+                        }
+                        this.modelValue.setText("FFNN Model");
                         this.saveModelButton.setEnabled(true);
+                        this.dataTestButton.setEnabled(true);
                     } catch (Exception ex) {
                         Logger.getLogger(MainWindow.class.getName()).log(Level.SEVERE, null, ex);
                     }   break;
@@ -376,21 +397,22 @@ public class MainWindow extends javax.swing.JFrame {
                                 this.resultTextArea.setText(eval.toSummaryString("\n== Summary ==\n",false));
                                 this.resultTextArea.append(eval.toClassDetailsString("\n== Detailed Accuracy By Class ==\n"));
                                 this.resultTextArea.append(eval.toMatrixString("\n== Confusion Matrix ==\n"));
-                                this.isiStatus.setText("Running Cross Validation with NB Completed");
+                                this.statusValue.setText("Running Cross Validation with NB Completed");
                                 break;
                             case 1:
                                 break;
                             default:
-                                this.isiStatus.setText("Do Nothing!");
+                                this.statusValue.setText("Do Nothing!");
                                 break;
                         }
-                        
+                        this.modelValue.setText("Bayes Model");
                         this.saveModelButton.setEnabled(true);
+                        this.dataTestButton.setEnabled(true);
                     } catch (Exception ex) {
                         Logger.getLogger(MainWindow.class.getName()).log(Level.SEVERE, null, ex);
                     }   break;
                 default:
-                    this.isiStatus.setText("Do Nothing!");
+                    this.statusValue.setText("Do Nothing!");
                     break;
             }
         }
@@ -406,14 +428,16 @@ public class MainWindow extends javax.swing.JFrame {
             if (returnVal == JFileChooser.APPROVE_OPTION) {
                 try {
                     File file = this.filechooser.getSelectedFile();
-                    this.isiStatus.setText("Load model: " + file.getName() + ".\n");
+                    this.statusValue.setText("Load model: " + file.getName() + ".\n");
                     loadedModel = (Classifier) SerializationHelper.read(file.getAbsolutePath());
-                    
+                    this.modelValue.setText("Model "+file.getName());
+                    this.dataTestButton.setEnabled(true);
+                    this.saveModelButton.setEnabled(true);
                 } catch (Exception ex) {
                     Logger.getLogger(MainWindow.class.getName()).log(Level.SEVERE, null, ex);
                 }
             } else {
-                this.isiStatus.setText("Load model canceled by user.\n");
+                this.statusValue.setText("Load model canceled by user.\n");
             }
         }
     }//GEN-LAST:event_loadModelButtonActionPerformed
@@ -429,15 +453,45 @@ public class MainWindow extends javax.swing.JFrame {
                 try {
                     File file = this.filechooser.getSelectedFile();
                     SerializationHelper.write(file.getAbsolutePath(), this.loadedModel);
-                    this.isiStatus.setText("Save model completed.");
+                    this.statusValue.setText("Save model completed.");
                 } catch (Exception ex) {
                     Logger.getLogger(MainWindow.class.getName()).log(Level.SEVERE, null, ex);
                 }
             } else {
-                this.isiStatus.setText("Save model canceled by user.\n");
+                this.statusValue.setText("Save model canceled by user.\n");
             }
         }
     }//GEN-LAST:event_saveModelButtonActionPerformed
+
+    private void dataTestButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_dataTestButtonActionPerformed
+        if(evt.getSource() == this.dataTestButton) {
+            this.filechooser.setAcceptAllFileFilterUsed(false);
+            this.filechooser.removeChoosableFileFilter(modelformat);
+            this.filechooser.setFileFilter(arffformat);
+            int returnVal = this.filechooser.showOpenDialog(MainWindow.this);
+            
+            if (returnVal == JFileChooser.APPROVE_OPTION) {
+                try {
+                    File file = this.filechooser.getSelectedFile();
+                    this.statusValue.setText("Membuka: " + file.getName() + ".\n");
+                    Instances testData = ConverterUtils.DataSource.read(file.getAbsolutePath());
+                    int i = 1;
+                    this.resultTextArea.setText("");
+                    for(Instance test:testData) {
+                        double result = loadedModel.classifyInstance(test);
+                        this.resultTextArea.append("Data-"+i+" Result : "+this.data.classAttribute().value((int)result)+"\n");
+                        i++;
+                    }
+
+                    this.statusValue.setText("Test berkas "+file.getName()+" berhasil!");
+                } catch (Exception ex) {
+                    Logger.getLogger(MainWindow.class.getName()).log(Level.SEVERE, null, ex);
+                }
+            } else {
+                this.statusValue.setText("Open command cancelled by user.\n");
+            }
+        }
+    }//GEN-LAST:event_dataTestButtonActionPerformed
 
     /**
      * @param args the command line arguments
@@ -487,6 +541,7 @@ public class MainWindow extends javax.swing.JFrame {
     private javax.swing.JPanel allPanel;
     private javax.swing.JLabel attributesLabel;
     private javax.swing.JLabel attributesValue;
+    private javax.swing.JButton dataTestButton;
     private javax.swing.JPanel datasetStatusPanel;
     private javax.swing.JButton executeButton;
     private javax.swing.JMenuItem exitFileMenuItem;
@@ -497,7 +552,6 @@ public class MainWindow extends javax.swing.JFrame {
     private javax.swing.Box.Filler horizontalFillRight;
     private javax.swing.JLabel instancesLabel;
     private javax.swing.JLabel instancesValue;
-    private javax.swing.JLabel isiStatus;
     private javax.swing.JLabel iterationLabel;
     private javax.swing.JTextField iterationValue;
     private javax.swing.JLabel learningRateLabel;
@@ -505,6 +559,8 @@ public class MainWindow extends javax.swing.JFrame {
     private javax.swing.JButton loadModelButton;
     private javax.swing.JMenuBar mainMenuBar;
     private javax.swing.JPanel mainPanel;
+    private javax.swing.JLabel modelLabel;
+    private javax.swing.JLabel modelValue;
     private javax.swing.JLabel neuronLabel;
     private javax.swing.JTextField neuronValue;
     private javax.swing.JButton openButton;
@@ -523,6 +579,7 @@ public class MainWindow extends javax.swing.JFrame {
     private javax.swing.JPanel selectMethodePanel;
     private javax.swing.JLabel statusLabel;
     private javax.swing.JPanel statusPanel;
+    private javax.swing.JLabel statusValue;
     private javax.swing.JLabel sumofweightsLabel;
     private javax.swing.JLabel sumofweightsValue;
     // End of variables declaration//GEN-END:variables
