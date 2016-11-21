@@ -333,65 +333,89 @@ public class MainWindow extends javax.swing.JFrame {
                 case 0:
                     try {
                         // FFNN Section
-                        double learningRate = Double.valueOf(this.learningRateValue.getText());
-                        int hiddenLayer = Integer.valueOf(this.hiddenLayerValue.getText());
-                        int jumlahNeuron = Integer.valueOf(this.neuronValue.getText());
-                        int jumlahIterasi = Integer.valueOf(this.iterationValue.getText());
-                        Classifier fn;
-                        if ( (learningRate > 0.0 && learningRate < 1.0) && (hiddenLayer >= 0 && hiddenLayer <= 1) && (jumlahNeuron >= 0) && (jumlahIterasi > 0)) {
-                            // Valid Input
-                            fn = new FFNNTubes(learningRate,hiddenLayer,jumlahNeuron,jumlahIterasi);
+                        if (this.learningRateValue.getText() == null || this.hiddenLayerValue.getText() == null || this.neuronValue.getText() == null || this.iterationValue.getText() == null) {
+                            this.statusValue.setText("Please fill box");
                         } else {
-                            // Default Running
-                            fn = new FFNNTubes(0.9,1,20,100000);
+                            double learningRate = Double.valueOf(this.learningRateValue.getText());
+                            int hiddenLayer = Integer.valueOf(this.hiddenLayerValue.getText());
+                            int jumlahNeuron = Integer.valueOf(this.neuronValue.getText());
+                            int jumlahIterasi = Integer.valueOf(this.iterationValue.getText());
+                            Classifier fn;
+                            if ( (learningRate > 0.0 && learningRate < 1.0) && (hiddenLayer >= 0) && (jumlahNeuron > 0) && (jumlahIterasi > 0)) {
+                                // Valid Input
+                                fn = new FFNNTubes(learningRate,hiddenLayer,jumlahNeuron,jumlahIterasi);
+                            } else {
+                                // Default Running
+                                fn = new FFNNTubes(0.9,1,20,100000);
+                            }
+                            fn.buildClassifier(this.data);
+                            Instances ueval1 = this.data;
+                            Normalize norm = new Normalize();
+                            Filter filter = new NominalToBinary();
+                            norm.setInputFormat(ueval1);
+
+                            Instances ueval = Filter.useFilter(ueval1, norm);
+                            filter.setInputFormat(ueval);
+
+                            for (Instance i1 : ueval) {
+                                filter.input(i1);
+                            }
+                            filter.batchFinished();
+
+                            // Evaluasi
+                            switch (this.selectEvaluationBox.getSelectedIndex()) {
+                                case 0:
+                                    // cross validate
+                                    
+                                    Evaluation ev = new Evaluation(ueval);
+                                    ev.crossValidateModel(fn, this.data, 10, new Random(1));
+                                    this.resultTextArea.setText(ev.toSummaryString("\n== Summary ==\n",false));
+                                    this.resultTextArea.append(ev.toClassDetailsString("\n== Detailed Accuracy By Class ==\n"));
+                                    this.resultTextArea.append(ev.toMatrixString("\n== Confusion Matrix ==\n"));
+                                    this.statusValue.setText("Running Cross Validation with FFNN Model Completed");
+                                    break;
+                                case 1:
+                                    // split test
+                                    Evaluation eval = new Evaluation(ueval);
+                                    eval.evaluateModel(fn, ueval);
+                                    this.resultTextArea.setText(eval.toSummaryString("\n== Summary ==\n",false));
+                                    this.resultTextArea.append(eval.toClassDetailsString("\n== Detailed Accuracy By Class ==\n"));
+                                    this.resultTextArea.append(eval.toMatrixString("\n== Confusion Matrix ==\n"));
+                                    this.statusValue.setText("Running Split Test with FFNN Model Completed");
+                                    break;
+                                default:
+                                    this.statusValue.setText("Do Nothing!");
+                                    break;
+                            }
+                            this.loadedModel = fn;
+                            this.modelValue.setText("FFNN Model");
+                            this.saveModelButton.setEnabled(true);
+                            this.dataTestButton.setEnabled(true);
                         }
-                        fn.buildClassifier(this.data);
-                        this.loadedModel = fn;
-                        Instances ueval1 = this.data;
-                        Normalize norm = new Normalize();
-                        Filter filter = new NominalToBinary();
-                        norm.setInputFormat(ueval1);
                         
-                        Instances ueval = Filter.useFilter(ueval1, norm);
-                        filter.setInputFormat(ueval);
                         
-                        for (Instance i1 : ueval) {
-                            filter.input(i1);
-                        }
-                        filter.batchFinished();
-                        
-                        // Evaluasi
-                        switch (this.selectEvaluationBox.getSelectedIndex()) {
-                            case 0:
-                                Evaluation eval = new Evaluation(ueval);
-                                eval.evaluateModel(fn, ueval);
-                                this.resultTextArea.setText(eval.toSummaryString("\n== Summary ==\n",false));
-                                this.resultTextArea.append(eval.toClassDetailsString("\n== Detailed Accuracy By Class ==\n"));
-                                this.resultTextArea.append(eval.toMatrixString("\n== Confusion Matrix ==\n"));
-                                this.statusValue.setText("Running Cross Validation with FFNN Model Completed");
-                                break;
-                            case 1:
-                                break;
-                            default:
-                                this.statusValue.setText("Do Nothing!");
-                                break;
-                        }
-                        this.modelValue.setText("FFNN Model");
-                        this.saveModelButton.setEnabled(true);
-                        this.dataTestButton.setEnabled(true);
                     } catch (Exception ex) {
                         Logger.getLogger(MainWindow.class.getName()).log(Level.SEVERE, null, ex);
                     }   break;
+                    
                 case 1:
                     try {
                         // Naive Bayes Section
                         Classifier nb = new NBTubes();
                         nb.buildClassifier(this.data);
-                        this.loadedModel = nb;
-                        
                         // Evaluasi
                         switch (this.selectEvaluationBox.getSelectedIndex()) {
                             case 0:
+                                // cross validate
+                                
+                                Evaluation ev = new Evaluation(this.data);
+                                ev.crossValidateModel(nb, this.data, 10, new Random(1));
+                                this.resultTextArea.setText(ev.toSummaryString("\n== Summary ==\n",false));
+                                this.resultTextArea.append(ev.toClassDetailsString("\n== Detailed Accuracy By Class ==\n"));
+                                this.resultTextArea.append(ev.toMatrixString("\n== Confusion Matrix ==\n"));
+                                this.statusValue.setText("Running Cross Validation with FFNN Model Completed");
+                                break;
+                            case 1:
                                 Evaluation eval = new Evaluation(this.data);
                                 eval.evaluateModel(nb, this.data);
                                 this.resultTextArea.setText(eval.toSummaryString("\n== Summary ==\n",false));
@@ -399,12 +423,11 @@ public class MainWindow extends javax.swing.JFrame {
                                 this.resultTextArea.append(eval.toMatrixString("\n== Confusion Matrix ==\n"));
                                 this.statusValue.setText("Running Cross Validation with NB Completed");
                                 break;
-                            case 1:
-                                break;
                             default:
                                 this.statusValue.setText("Do Nothing!");
                                 break;
                         }
+                        this.loadedModel = nb;
                         this.modelValue.setText("Bayes Model");
                         this.saveModelButton.setEnabled(true);
                         this.dataTestButton.setEnabled(true);
@@ -429,7 +452,13 @@ public class MainWindow extends javax.swing.JFrame {
                 try {
                     File file = this.filechooser.getSelectedFile();
                     this.statusValue.setText("Load model: " + file.getName() + ".\n");
-                    loadedModel = (Classifier) SerializationHelper.read(file.getAbsolutePath());
+                    this.loadedModel = (Classifier) SerializationHelper.read(file.getAbsolutePath());
+                    String nameClass = this.loadedModel.getClass().getCanonicalName();
+                    if (nameClass.equalsIgnoreCase("imba.weka.FFNNTubes")){
+                        
+                    } else if (nameClass.equalsIgnoreCase("imba.weka.NBTubes")) {
+                        
+                    }
                     this.modelValue.setText("Model "+file.getName());
                     this.dataTestButton.setEnabled(true);
                     this.saveModelButton.setEnabled(true);
