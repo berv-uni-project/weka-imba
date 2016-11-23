@@ -124,6 +124,15 @@
                 <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="dataTestButtonActionPerformed"/>
               </Events>
             </Component>
+            <Component class="javax.swing.JButton" name="removeAttribute">
+              <Properties>
+                <Property name="text" type="java.lang.String" value="Remove Attribute"/>
+                <Property name="enabled" type="boolean" value="false"/>
+              </Properties>
+              <Events>
+                <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="removeAttributeActionPerformed"/>
+              </Events>
+            </Component>
           </SubComponents>
         </Container>
         <Container class="javax.swing.JPanel" name="datasetStatusPanel">

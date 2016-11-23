@@ -27,6 +27,7 @@ import weka.core.converters.ConverterUtils;
 import weka.filters.Filter;
 import weka.filters.unsupervised.attribute.NominalToBinary;
 import weka.filters.unsupervised.attribute.Normalize;
+import weka.filters.unsupervised.attribute.Remove;
 
 /**
  *
@@ -58,6 +59,7 @@ public class MainWindow extends javax.swing.JFrame {
         loadModelButton = new javax.swing.JButton();
         saveModelButton = new javax.swing.JButton();
         dataTestButton = new javax.swing.JButton();
+        removeAttribute = new javax.swing.JButton();
         datasetStatusPanel = new javax.swing.JPanel();
         relationLabel = new javax.swing.JLabel();
         relationValue = new javax.swing.JLabel();
@@ -141,6 +143,15 @@ public class MainWindow extends javax.swing.JFrame {
             }
         });
         mainPanel.add(dataTestButton);
+
+        removeAttribute.setText("Remove Attribute");
+        removeAttribute.setEnabled(false);
+        removeAttribute.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                removeAttributeActionPerformed(evt);
+            }
+        });
+        mainPanel.add(removeAttribute);
 
         allPanel.add(mainPanel);
 
@@ -318,6 +329,7 @@ public class MainWindow extends javax.swing.JFrame {
                     this.selectEvaluationBox.setEnabled(true);
                     this.selectClassifierBox.setEnabled(true);
                     this.loadModelButton.setEnabled(true);
+                    this.removeAttribute.setEnabled(true);
                     this.statusValue.setText("Membuka berkas "+file.getName()+" berhasil!");
                 } catch (Exception ex) {
                     Logger.getLogger(MainWindow.class.getName()).log(Level.SEVERE, null, ex);
@@ -401,8 +413,9 @@ public class MainWindow extends javax.swing.JFrame {
                     
                 case 1:
                     try {
+                        
                         // Naive Bayes Section
-                        Classifier nb = new NBTubes();
+                        Classifier nb = new NBTubes("Discretize");
                         nb.buildClassifier(this.data);
                         // Evaluasi
                         switch (this.selectEvaluationBox.getSelectedIndex()) {
@@ -500,6 +513,22 @@ public class MainWindow extends javax.swing.JFrame {
                     File file = this.filechooser.getSelectedFile();
                     this.statusValue.setText("Membuka: " + file.getName() + ".\n");
                     Instances testData = ConverterUtils.DataSource.read(file.getAbsolutePath());
+                    
+                    JFrame frame = new JFrame("Attribute Index");
+                    String index = JOptionPane.showInputDialog(frame, "Attribute Index");
+                    
+                    if (index == null) {
+                        
+                    } else {
+                    int[] att = new int[1];
+                            att[0] = Integer.valueOf(index);
+                            Remove remove = new Remove();
+                            remove.setAttributeIndicesArray(att);
+                            remove.setInvertSelection(false);
+                            remove.setInputFormat(testData);
+                            testData = Filter.useFilter(testData, remove);
+                            
+                         
                     int i = 1;
                     this.resultTextArea.setText("");
                     for(Instance test:testData) {
@@ -507,7 +536,16 @@ public class MainWindow extends javax.swing.JFrame {
                         this.resultTextArea.append("Data-"+i+" Result : "+this.data.classAttribute().value((int)result)+"\n");
                         i++;
                     }
-
+                    
+                    testData.setClassIndex(this.data.classIndex());
+                    Evaluation ev = new Evaluation(testData);
+                    ev.crossValidateModel(this.loadedModel, testData, 10, new Random(1));
+                    this.resultTextArea.append(ev.toSummaryString("\n== Summary ==\n",false));
+                    this.resultTextArea.append(ev.toClassDetailsString("\n== Detailed Accuracy By Class ==\n"));
+                    this.resultTextArea.append(ev.toMatrixString("\n== Confusion Matrix ==\n"));
+                    this.statusValue.setText("Running Cross Validation with FFNN Model Completed");
+                                
+                    }
                     this.statusValue.setText("Test berkas "+file.getName()+" berhasil!");
                 } catch (Exception ex) {
                     Logger.getLogger(MainWindow.class.getName()).log(Level.SEVERE, null, ex);
@@ -517,6 +555,33 @@ public class MainWindow extends javax.swing.JFrame {
             }
         }
     }//GEN-LAST:event_dataTestButtonActionPerformed
+
+    private void removeAttributeActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_removeAttributeActionPerformed
+        // Minta input nama kelas
+                    JFrame frame = new JFrame("Attribute Index");
+                    String index = JOptionPane.showInputDialog(frame, "Attribute Index");
+                    if (index == null) {
+                        
+                    } else {
+                        try {
+                            int[] att = new int[1];
+                            att[0] = Integer.valueOf(index);
+                            Remove remove = new Remove();
+                            remove.setAttributeIndicesArray(att);
+                            remove.setInvertSelection(false);
+                            remove.setInputFormat(this.data);
+                            this.data = Filter.useFilter(this.data, remove);
+                            
+                            this.instancesValue.setText(String.valueOf(this.data.numInstances()));
+                    this.attributesValue.setText(String.valueOf(this.data.numAttributes()));
+                    this.relationValue.setText(String.valueOf(this.data.relationName()));
+                    this.sumofweightsValue.setText(String.valueOf(this.data.sumOfWeights()));
+                        } catch (Exception ex) {
+                            Logger.getLogger(MainWindow.class.getName()).log(Level.SEVERE, null, ex);
+                        }
+                        
+                    }
+    }//GEN-LAST:event_removeAttributeActionPerformed
 
     /**
      * @param args the command line arguments
@@ -591,6 +656,7 @@ public class MainWindow extends javax.swing.JFrame {
     private javax.swing.JButton openButton;
     private javax.swing.JLabel relationLabel;
     private javax.swing.JLabel relationValue;
+    private javax.swing.JButton removeAttribute;
     private javax.swing.JLabel resultLabel;
     private javax.swing.JScrollPane resultPane;
     private javax.swing.JTextArea resultTextArea;

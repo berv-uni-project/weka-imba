@@ -367,6 +367,8 @@ public class NBTubes extends AbstractClassifier implements Serializable {
                             val = val.replaceAll("\\)", "");
                             val = val.replaceAll("]", "");
                             
+                            //System.out.println(val);
+                            
                             valMinMax = val.split("-");
                             
                             
@@ -383,14 +385,21 @@ public class NBTubes extends AbstractClassifier implements Serializable {
                                     big = true;
                                 }
                             } else {
-                                if (valMinMax[1].equals("inf")) {
-                                    valMinMax[1] = "1.0";
+                                if (valMinMax.length == 2) {
+                                    if (valMinMax[1].equals("inf")) {
+                                        valMinMax[1] = "1.0";
+                                    }
+                                    
+                                    if (Double.valueOf(instance.stringValue(k)) > Double.valueOf(valMinMax[0]) && Double.valueOf(instance.stringValue(k)) <= Double.valueOf(valMinMax[1])) {
+                                        big = true;
+                                    }
+                                } else {
+                                    l = dataset.attribute(k).indexOfValue(instance.stringValue(k));
+                                    big = true;
                                 }
                                 //System.out.println("Min = " + valMinMax[0]);
                                 //System.out.println("Max = " + valMinMax[1]);
-                                if (Double.valueOf(instance.stringValue(k)) > Double.valueOf(valMinMax[0]) && Double.valueOf(instance.stringValue(k)) <= Double.valueOf(valMinMax[1])) {
-                                    big = true;
-                                }
+                                
                             }
                             l++;
                         }
