@@ -509,6 +509,7 @@ public class MainWindow extends javax.swing.JFrame {
             int returnVal = this.filechooser.showOpenDialog(MainWindow.this);
             
             if (returnVal == JFileChooser.APPROVE_OPTION) {
+                
                 try {
                     File file = this.filechooser.getSelectedFile();
                     this.statusValue.setText("Membuka: " + file.getName() + ".\n");
@@ -520,21 +521,29 @@ public class MainWindow extends javax.swing.JFrame {
                     if (index == null) {
                         
                     } else {
-                    int[] att = new int[1];
+                        try {
+                            int[] att = new int[1];
                             att[0] = Integer.valueOf(index);
                             Remove remove = new Remove();
                             remove.setAttributeIndicesArray(att);
                             remove.setInvertSelection(false);
                             remove.setInputFormat(testData);
                             testData = Filter.useFilter(testData, remove);
-                            
-                         
+                        } catch (Exception ex) {
+                            Logger.getLogger(MainWindow.class.getName()).log(Level.SEVERE, null, ex);
+                        }
+                    }
+                    
                     int i = 1;
                     this.resultTextArea.setText("");
                     for(Instance test:testData) {
-                        double result = loadedModel.classifyInstance(test);
-                        this.resultTextArea.append("Data-"+i+" Result : "+this.data.classAttribute().value((int)result)+"\n");
-                        i++;
+                        try {
+                            double result = loadedModel.classifyInstance(test);
+                            this.resultTextArea.append("Data-"+i+" Result : "+this.data.classAttribute().value((int)result)+"\n");
+                            i++;
+                        } catch (Exception ex) {
+                            Logger.getLogger(MainWindow.class.getName()).log(Level.SEVERE, null, ex);
+                        }
                     }
                     
                     testData.setClassIndex(this.data.classIndex());
@@ -544,12 +553,10 @@ public class MainWindow extends javax.swing.JFrame {
                     this.resultTextArea.append(ev.toClassDetailsString("\n== Detailed Accuracy By Class ==\n"));
                     this.resultTextArea.append(ev.toMatrixString("\n== Confusion Matrix ==\n"));
                     this.statusValue.setText("Running Cross Validation with FFNN Model Completed");
-                                
-                    }
                     this.statusValue.setText("Test berkas "+file.getName()+" berhasil!");
                 } catch (Exception ex) {
                     Logger.getLogger(MainWindow.class.getName()).log(Level.SEVERE, null, ex);
-                }
+                }  
             } else {
                 this.statusValue.setText("Open command cancelled by user.\n");
             }
